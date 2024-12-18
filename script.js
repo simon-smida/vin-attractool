@@ -13,51 +13,51 @@ let bgColor = "#000000";
 let attractorType = "lorenz";
 
 const attractorParams = {
-    lorenz:    { sigma:10, rho:28, beta:2.667 },
-    rossler:   { a:0.2, b:0.2, c:5.7 },
-    halvorsen: { a:1.4 },
-    chen:      { a:35, b:3, c:28 },
-    aizawa:    { a:0.95, b:0.7, c:0.6, d:3.5 },
-    dadras:    { p:3, q:2.7 }
+    lorenz: { sigma: 10, rho: 28, beta: 2.667 },
+    rossler: { a: 0.2, b: 0.2, c: 5.7 },
+    halvorsen: { a: 1.4 },
+    chen: { a: 35, b: 3, c: 28 },
+    aizawa: { a: 0.95, b: 0.7, c: 0.6, d: 3.5 },
+    dadras: { p: 3, q: 2.7 }
 };
 
 const prettyParameters = {
-    lorenz:    { sigma:10, rho:28, beta:2.667 },
-    rossler:   { a:0.2, b:0.2, c:5.7 },
-    halvorsen: { a:1.4 },
-    chen:      { a:35, b:3, c:28 },
-    aizawa:    { a:0.95, b:0.7, c:0.6, d:3.5 },
-    dadras:    { p:3, q:2.7 }
+    lorenz: { sigma: 10, rho: 28, beta: 2.667 },
+    rossler: { a: 0.2, b: 0.2, c: 5.7 },
+    halvorsen: { a: 1.4 },
+    chen: { a: 35, b: 3, c: 28 },
+    aizawa: { a: 0.95, b: 0.7, c: 0.6, d: 3.5 },
+    dadras: { p: 3, q: 2.7 }
 };
 
 const paramRanges = {
-    lorenz:    {
-        sigma:{min:0, max:50, step:0.1},
-        rho:{min:0, max:50, step:0.1},
-        beta:{min:0, max:10, step:0.1}
+    lorenz: {
+        sigma: { min: 0, max: 50, step: 0.1 },
+        rho: { min: 0, max: 50, step: 0.1 },
+        beta: { min: 0, max: 10, step: 0.1 }
     },
-    rossler:   {
-        a:{min:0, max:1, step:0.01},
-        b:{min:0, max:1, step:0.01},
-        c:{min:0, max:10, step:0.1}
+    rossler: {
+        a: { min: 0, max: 1, step: 0.01 },
+        b: { min: 0, max: 1, step: 0.01 },
+        c: { min: 0, max: 10, step: 0.1 }
     },
     halvorsen: {
-        a:{min:0, max:5, step:0.1}
+        a: { min: 0, max: 5, step: 0.1 }
     },
-    chen:      {
-        a:{min:0, max:50, step:0.5},
-        b:{min:0, max:10, step:0.1},
-        c:{min:0, max:50, step:0.5}
+    chen: {
+        a: { min: 0, max: 50, step: 0.5 },
+        b: { min: 0, max: 10, step: 0.1 },
+        c: { min: 0, max: 50, step: 0.5 }
     },
-    aizawa:    {
-        a:{min:0, max:2, step:0.01},
-        b:{min:0, max:2, step:0.01},
-        c:{min:0, max:2, step:0.01},
-        d:{min:0, max:5, step:0.1}
+    aizawa: {
+        a: { min: 0, max: 2, step: 0.01 },
+        b: { min: 0, max: 2, step: 0.01 },
+        c: { min: 0, max: 2, step: 0.01 },
+        d: { min: 0, max: 5, step: 0.1 }
     },
-    dadras:    {
-        p:{min:0, max:10, step:0.1},
-        q:{min:0, max:10, step:0.1}
+    dadras: {
+        p: { min: 0, max: 10, step: 0.1 },
+        q: { min: 0, max: 10, step: 0.1 }
     }
 };
 
@@ -74,24 +74,24 @@ window.onload = () => {
     animate();
 };
 
-function initUI(){
-    document.getElementById('particleCount').addEventListener('input', e=>{
+function initUI() {
+    document.getElementById('particleCount').addEventListener('input', e => {
         particleCount = parseInt(e.target.value);
         document.getElementById('particleCountVal').textContent = particleCount;
         initParticles();
     });
-    document.getElementById('speed').addEventListener('input', e=>{
+    document.getElementById('speed').addEventListener('input', e => {
         speed = parseFloat(e.target.value);
-        document.getElementById('speedVal').textContent = speed+"x";
+        document.getElementById('speedVal').textContent = speed + "x";
     });
-    document.getElementById('colorScheme').addEventListener('change', e=>{
+    document.getElementById('colorScheme').addEventListener('change', e => {
         colorScheme = e.target.value;
     });
-    document.getElementById('bgColor').addEventListener('change', e=>{
+    document.getElementById('bgColor').addEventListener('change', e => {
         bgColor = e.target.value;
     });
 
-    document.getElementById('attractorType').addEventListener('change', e=>{
+    document.getElementById('attractorType').addEventListener('change', e => {
         attractorType = e.target.value;
         setPredefinedParameters();
         updateParametersUI();
@@ -100,32 +100,42 @@ function initUI(){
     });
 
     document.getElementById('resetBtn').addEventListener('click', resetParticles);
-    document.getElementById('pauseBtn').addEventListener('click', ()=>{ paused = !paused; });
-    document.getElementById('saveBtn').addEventListener('click', saveImage);
-
-    document.getElementById('helpBtn').addEventListener('click', ()=>{
-        const helpOverlay = document.getElementById('helpOverlay');
-        helpOverlay.style.display = (helpOverlay.style.display==='none'?'block':'none');
+    document.getElementById('pauseBtn').addEventListener('click', () => {
+        paused = !paused;
+        const pauseBtn = document.getElementById('pauseBtn');
+        if (paused) {
+            pauseBtn.innerHTML = '▶';
+            pauseBtn.title = 'Resume Simulation';
+        } else {
+            pauseBtn.innerHTML = '⏸';
+            pauseBtn.title = 'Pause Simulation';
+        }
     });
 
-    document.getElementById('equationsBtn').addEventListener('click', ()=>{
+
+    document.getElementById('helpBtn').addEventListener('click', () => {
+        const helpOverlay = document.getElementById('helpOverlay');
+        helpOverlay.style.display = (helpOverlay.style.display === 'none' ? 'block' : 'none');
+    });
+
+    document.getElementById('equationsBtn').addEventListener('click', () => {
         let eqOverlay = document.getElementById('equationsOverlay');
         updateEquations();
-        eqOverlay.style.display = (eqOverlay.style.display==='none'?'block':'none');
+        eqOverlay.style.display = (eqOverlay.style.display === 'none' ? 'block' : 'none');
     });
-    
+
     window.addEventListener('keydown', handleKey);
-    canvas.addEventListener('mousedown', e=>{mouseDown=true; lastMouseX=e.clientX; lastMouseY=e.clientY;});
-    canvas.addEventListener('mouseup', ()=>{mouseDown=false;});
+    canvas.addEventListener('mousedown', e => { mouseDown = true; lastMouseX = e.clientX; lastMouseY = e.clientY; });
+    canvas.addEventListener('mouseup', () => { mouseDown = false; });
     canvas.addEventListener('mousemove', mouseMove);
     window.addEventListener('resize', resizeCanvas);
 }
 
-function updateEquations(){
+function updateEquations() {
     let eqDiv = document.getElementById('equationsContent');
     let eqText = "";
 
-    if(attractorType==='lorenz'){
+    if (attractorType === 'lorenz') {
         eqText = `
         \\[
         \\frac{dx}{dt} = \\sigma(y - x)
@@ -136,7 +146,7 @@ function updateEquations(){
         \\[
         \\frac{dz}{dt} = xy - \\beta z
         \\]`;
-    } else if(attractorType==='rossler'){
+    } else if (attractorType === 'rossler') {
         eqText = `
         \\[
         \\frac{dx}{dt} = -y - z
@@ -147,7 +157,7 @@ function updateEquations(){
         \\[
         \\frac{dz}{dt} = b + z(x - c)
         \\]`;
-    } else if(attractorType==='halvorsen'){
+    } else if (attractorType === 'halvorsen') {
         eqText = `
         \\[
         \\frac{dx}{dt} = -a x - y - z(y + x)
@@ -158,7 +168,7 @@ function updateEquations(){
         \\[
         \\frac{dz}{dt} = -a z - x - y(x + z)
         \\]`;
-    } else if(attractorType==='chen'){
+    } else if (attractorType === 'chen') {
         eqText = `
         \\[
         \\frac{dx}{dt} = a(y - x)
@@ -169,7 +179,7 @@ function updateEquations(){
         \\[
         \\frac{dz}{dt} = xy - b z
         \\]`;
-    } else if(attractorType==='aizawa'){
+    } else if (attractorType === 'aizawa') {
         eqText = `
         \\[
         \\frac{dx}{dt} = (z - b)x - d y
@@ -180,7 +190,7 @@ function updateEquations(){
         \\[
         \\frac{dz}{dt} = c + z(a - z^{2}) + \\frac{x^{2} + y^{2}}{2}
         \\]`;
-    } else if(attractorType==='dadras'){
+    } else if (attractorType === 'dadras') {
         eqText = `
         \\[
         \\frac{dx}{dt} = y - x
@@ -201,19 +211,20 @@ function updateEquations(){
 
 function setPredefinedParameters() {
     Object.assign(attractorParams[attractorType], prettyParameters[attractorType]);
-    resetParticles();
+    updateParametersUI();
 }
 
-function updateParametersUI(){
+function updateParametersUI() {
     const container = document.getElementById('paramContainer');
     container.innerHTML = "";
     const params = attractorParams[attractorType];
     const ranges = paramRanges[attractorType];
 
-    for(let key in params){
+    for (let key in params) {
         let val = params[key];
         let rangeSpec = ranges[key];
-        if(!rangeSpec) continue; 
+        if (!rangeSpec) continue;
+
         // Create UI elements
         let group = document.createElement('div');
         group.className = 'param-group';
@@ -225,7 +236,7 @@ function updateParametersUI(){
         label.textContent = key;
 
         let span = document.createElement('span');
-        span.id = key+"Val";
+        span.id = key + "Val";
         span.textContent = val.toFixed(3);
 
         let input = document.createElement('input');
@@ -235,11 +246,10 @@ function updateParametersUI(){
         input.max = rangeSpec.max;
         input.step = rangeSpec.step;
         input.value = val;
-        input.addEventListener('input', e=>{
+        input.addEventListener('input', e => {
             const newVal = parseFloat(e.target.value);
             attractorParams[attractorType][key] = newVal;
             span.textContent = newVal.toFixed(3);
-            resetParticles();
         });
 
         labelRow.appendChild(label);
@@ -252,42 +262,52 @@ function updateParametersUI(){
 
 function handleKey(e) {
     let step = e.shiftKey ? 1.0 : 0.1;
-    if (e.code === 'Space') {
+
+    if (e.code === 'Escape') {
+        const helpOverlay = document.getElementById('helpOverlay');
+        const eqOverlay = document.getElementById('equationsOverlay');
+
+        if (helpOverlay.style.display === 'block') {
+            helpOverlay.style.display = 'none';
+        }
+        if (eqOverlay.style.display === 'block') {
+            eqOverlay.style.display = 'none';
+        }
+    } else if (e.code === 'Space') {
         paused = !paused;
+        const pauseBtn = document.getElementById('pauseBtn');
+        pauseBtn.innerHTML = paused ? '▶' : '⏸';
+        pauseBtn.title = paused ? 'Resume Simulation' : 'Pause Simulation';
     } else if (e.code === 'Enter') {
         setPredefinedParameters();
         updateParametersUI();
     } else {
-        // For arrow keys, try adjusting first parameter or a known param
         let p = attractorParams[attractorType];
-        if(!p) return;
+        if (!p) return;
         const keys = Object.keys(p);
-        if(keys.length === 0) return;
+        if (keys.length === 0) return;
 
-        // For simplicity, arrow keys adjust first param if available
         let primaryParam = keys[0];
-        if(attractorType==='lorenz'){
-            // For lorenz, left/right = sigma, up/down = rho
-            if(e.code==='ArrowUp') { p.rho += step; }
-            else if(e.code==='ArrowDown') { p.rho -= step; }
-            else if(e.code==='ArrowLeft') { p.sigma -= step; }
-            else if(e.code==='ArrowRight') { p.sigma += step; }
+        if (attractorType === 'lorenz') {
+            if (e.code === 'ArrowUp') { p.rho += step; }
+            else if (e.code === 'ArrowDown') { p.rho -= step; }
+            else if (e.code === 'ArrowLeft') { p.sigma -= step; }
+            else if (e.code === 'ArrowRight') { p.sigma += step; }
         } else {
-            // Otherwise, just pick first param to modify
-            if(e.code==='ArrowUp'||e.code==='ArrowRight') p[primaryParam] += step;
-            if(e.code==='ArrowDown'||e.code==='ArrowLeft') p[primaryParam] -= step;
+            if (e.code === 'ArrowUp' || e.code === 'ArrowRight') p[primaryParam] += step;
+            if (e.code === 'ArrowDown' || e.code === 'ArrowLeft') p[primaryParam] -= step;
         }
         updateParametersUI();
-        resetParticles();
     }
 }
 
-function mouseMove(e){
-    if(!mouseDown) return;
+
+function mouseMove(e) {
+    if (!mouseDown) return;
     let dx = e.clientX - lastMouseX;
     let dy = e.clientY - lastMouseY;
-    rotationX += dy*0.01;
-    rotationY += dx*0.01;
+    rotationX += dy * 0.01;
+    rotationY += dx * 0.01;
     lastMouseX = e.clientX;
     lastMouseY = e.clientY;
 }
@@ -297,98 +317,98 @@ function resizeCanvas() {
     canvas.height = window.innerHeight;
 }
 
-function initParticles(){
+function initParticles() {
     particles = [];
-    for(let i=0; i<particleCount; i++){
-        let hue = Math.random()*360;
-        let hueInc = 0.5+Math.random();
+    for (let i = 0; i < particleCount; i++) {
+        let hue = Math.random() * 360;
+        let hueInc = 0.5 + Math.random();
         particles.push({
-            x: Math.random()*10-5,
-            y: Math.random()*10-5,
-            z: Math.random()*10-5,
+            x: Math.random() * 10 - 5,
+            y: Math.random() * 10 - 5,
+            z: Math.random() * 10 - 5,
             hue: hue,
             hueInc: hueInc
         });
     }
 }
 
-function resetParticles(){
+function resetParticles() {
     initParticles();
 }
 
-function stepLorenz(p){
-    let {sigma,rho,beta} = attractorParams.lorenz;
-    let dx = sigma*(p.y - p.x);
-    let dy = p.x*(rho - p.z)-p.y;
-    let dz = p.x*p.y - beta*p.z;
-    p.x += dx*0.01*speed;
-    p.y += dy*0.01*speed;
-    p.z += dz*0.01*speed;
+function stepLorenz(p) {
+    let { sigma, rho, beta } = attractorParams.lorenz;
+    let dx = sigma * (p.y - p.x);
+    let dy = p.x * (rho - p.z) - p.y;
+    let dz = p.x * p.y - beta * p.z;
+    p.x += dx * 0.01 * speed;
+    p.y += dy * 0.01 * speed;
+    p.z += dz * 0.01 * speed;
 }
 
-function stepRossler(p){
-    let {a,b,c} = attractorParams.rossler;
+function stepRossler(p) {
+    let { a, b, c } = attractorParams.rossler;
     let dx = -p.y - p.z;
-    let dy = p.x + a*p.y;
-    let dz = b + p.z*(p.x - c);
-    p.x+=dx*0.01*speed;
-    p.y+=dy*0.01*speed;
-    p.z+=dz*0.01*speed;
+    let dy = p.x + a * p.y;
+    let dz = b + p.z * (p.x - c);
+    p.x += dx * 0.01 * speed;
+    p.y += dy * 0.01 * speed;
+    p.z += dz * 0.01 * speed;
 }
 
-function stepHalvorsen(p){
-    let {a} = attractorParams.halvorsen;
-    let dx = -a*p.x - p.y - p.z*(p.y+ p.x);
-    let dy = -a*p.y - p.z - p.x*(p.z+ p.y);
-    let dz = -a*p.z - p.x - p.y*(p.x+ p.z);
-    p.x+=dx*0.005*speed;
-    p.y+=dy*0.005*speed;
-    p.z+=dz*0.005*speed;
+function stepHalvorsen(p) {
+    let { a } = attractorParams.halvorsen;
+    let dx = -a * p.x - p.y - p.z * (p.y + p.x);
+    let dy = -a * p.y - p.z - p.x * (p.z + p.y);
+    let dz = -a * p.z - p.x - p.y * (p.x + p.z);
+    p.x += dx * 0.005 * speed;
+    p.y += dy * 0.005 * speed;
+    p.z += dz * 0.005 * speed;
 }
 
-function stepChen(p){
-    let {a,b,c} = attractorParams.chen;
-    let dx = a*(p.y - p.x);
-    let dy = (c - a)*p.x - p.x*p.z + c*p.y;
-    let dz = p.x*p.y - b*p.z;
-    p.x+=dx*0.01*speed;
-    p.y+=dy*0.01*speed;
-    p.z+=dz*0.01*speed;
+function stepChen(p) {
+    let { a, b, c } = attractorParams.chen;
+    let dx = a * (p.y - p.x);
+    let dy = (c - a) * p.x - p.x * p.z + c * p.y;
+    let dz = p.x * p.y - b * p.z;
+    p.x += dx * 0.01 * speed;
+    p.y += dy * 0.01 * speed;
+    p.z += dz * 0.01 * speed;
 }
 
-function stepAizawa(p){
-    let {a,b,c,d} = attractorParams.aizawa;
-    let dx = (p.z - b)*p.x - d*p.y;
-    let dy = d*p.x + (p.z - b)*p.y;
-    let dz = c + p.z*(a - p.z*p.z) + (p.x*p.x+p.y*p.y)/2;
-    p.x+=dx*0.01*speed;
-    p.y+=dy*0.01*speed;
-    p.z+=dz*0.01*speed;
+function stepAizawa(p) {
+    let { a, b, c, d } = attractorParams.aizawa;
+    let dx = (p.z - b) * p.x - d * p.y;
+    let dy = d * p.x + (p.z - b) * p.y;
+    let dz = c + p.z * (a - p.z * p.z) + (p.x * p.x + p.y * p.y) / 2;
+    p.x += dx * 0.01 * speed;
+    p.y += dy * 0.01 * speed;
+    p.z += dz * 0.01 * speed;
 }
 
-function stepDadras(p){
-    let {p:pp,q} = attractorParams.dadras;
+function stepDadras(p) {
+    let { p: pp, q } = attractorParams.dadras;
     let dx = p.y - p.x;
-    let dy = p.x*p.z + pp*p.y;
-    let dz = q*p.z + p.x*p.y;
-    p.x+=dx*0.01*speed;
-    p.y+=dy*0.01*speed;
-    p.z+=dz*0.01*speed;
+    let dy = p.x * p.z + pp * p.y;
+    let dz = q * p.z + p.x * p.y;
+    p.x += dx * 0.01 * speed;
+    p.y += dy * 0.01 * speed;
+    p.z += dz * 0.01 * speed;
 }
 
-function animate(){
+function animate() {
     requestAnimationFrame(animate);
 
-    ctx.fillStyle = hexToRGBA(bgColor,0.1);
+    ctx.fillStyle = hexToRGBA(bgColor, 0.1);
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    let centerX = canvas.width/2;
-    let centerY = canvas.height/2;
+    let centerX = canvas.width / 2;
+    let centerY = canvas.height / 2;
     let scale = 10;
 
-    if(!paused){
-        for(let p of particles){
-            switch(attractorType){
+    if (!paused) {
+        for (let p of particles) {
+            switch (attractorType) {
                 case 'lorenz': stepLorenz(p); break;
                 case 'rossler': stepRossler(p); break;
                 case 'halvorsen': stepHalvorsen(p); break;
@@ -399,29 +419,29 @@ function animate(){
         }
     }
 
-    for(let p of particles){
+    for (let p of particles) {
         let X = p.x, Y = p.y, Z = p.z;
 
         let cosX = Math.cos(rotationX), sinX = Math.sin(rotationX);
         let cosY = Math.cos(rotationY), sinY = Math.sin(rotationY);
 
-        let xz = X*cosY - Z*sinY;
-        let zz = Z*cosY + X*sinY;
-        let yz = Y*cosX - zz*sinX;
+        let xz = X * cosY - Z * sinY;
+        let zz = Z * cosY + X * sinY;
+        let yz = Y * cosX - zz * sinX;
 
-        let px = xz*scale + centerX;
-        let py = yz*scale + centerY;
+        let px = xz * scale + centerX;
+        let py = yz * scale + centerY;
 
         ctx.fillStyle = getColor(p);
         ctx.fillRect(px, py, 2, 2);
     }
 }
 
-function getColor(p){
-    p.hue += p.hueInc*speed;
-    if(p.hue>360) p.hue-=360;
+function getColor(p) {
+    p.hue += p.hueInc * speed;
+    if (p.hue > 360) p.hue -= 360;
     let h = p.hue;
-    switch(colorScheme){
+    switch (colorScheme) {
         case "rainbow":
             return `hsl(${h},100%,50%)`;
         case "fire":
@@ -441,7 +461,7 @@ function getColor(p){
 }
 
 
-function saveImage(){
+function saveImage() {
     let link = document.createElement('a');
     link.download = 'attractool.png';
     link.href = canvas.toDataURL();
@@ -449,9 +469,9 @@ function saveImage(){
 }
 
 function hexToRGBA(hex, alpha) {
-    hex = hex.replace('#','');
-    let r = parseInt(hex.substring(0,2),16);
-    let g = parseInt(hex.substring(2,4),16);
-    let b = parseInt(hex.substring(4,6),16);
+    hex = hex.replace('#', '');
+    let r = parseInt(hex.substring(0, 2), 16);
+    let g = parseInt(hex.substring(2, 4), 16);
+    let b = parseInt(hex.substring(4, 6), 16);
     return `rgba(${r},${g},${b},${alpha})`;
 }
