@@ -1,355 +1,457 @@
-window.addEventListener('load', () => {
-    const canvas = document.getElementById('attractorCanvas');
-    const ctx = canvas.getContext('2d');
+let canvas, ctx;
+let paused = false;
+let rotationX = 0;
+let rotationY = 0;
+let lastMouseX = null;
+let lastMouseY = null;
+let mouseDown = false;
+let speed = 1;
+let particleCount = 1000;
+let particles = [];
+let colorScheme = "rainbow";
+let bgColor = "#000000";
+let attractorType = "lorenz";
+
+const attractorParams = {
+    lorenz:    { sigma:10, rho:28, beta:2.667 },
+    rossler:   { a:0.2, b:0.2, c:5.7 },
+    halvorsen: { a:1.4 },
+    chen:      { a:35, b:3, c:28 },
+    aizawa:    { a:0.95, b:0.7, c:0.6, d:3.5 },
+    dadras:    { p:3, q:2.7 }
+};
+
+const prettyParameters = {
+    lorenz:    { sigma:10, rho:28, beta:2.667 },
+    rossler:   { a:0.2, b:0.2, c:5.7 },
+    halvorsen: { a:1.4 },
+    chen:      { a:35, b:3, c:28 },
+    aizawa:    { a:0.95, b:0.7, c:0.6, d:3.5 },
+    dadras:    { p:3, q:2.7 }
+};
+
+const paramRanges = {
+    lorenz:    {
+        sigma:{min:0, max:50, step:0.1},
+        rho:{min:0, max:50, step:0.1},
+        beta:{min:0, max:10, step:0.1}
+    },
+    rossler:   {
+        a:{min:0, max:1, step:0.01},
+        b:{min:0, max:1, step:0.01},
+        c:{min:0, max:10, step:0.1}
+    },
+    halvorsen: {
+        a:{min:0, max:5, step:0.1}
+    },
+    chen:      {
+        a:{min:0, max:50, step:0.5},
+        b:{min:0, max:10, step:0.1},
+        c:{min:0, max:50, step:0.5}
+    },
+    aizawa:    {
+        a:{min:0, max:2, step:0.01},
+        b:{min:0, max:2, step:0.01},
+        c:{min:0, max:2, step:0.01},
+        d:{min:0, max:5, step:0.1}
+    },
+    dadras:    {
+        p:{min:0, max:10, step:0.1},
+        q:{min:0, max:10, step:0.1}
+    }
+};
+
+window.onload = () => {
+    canvas = document.getElementById('canvas');
+    ctx = canvas.getContext('2d');
     resizeCanvas();
 
-    // Attractors definitions
-    const attractors = {
-        'clifford': {
-            formula: `
-            \\[
-            x_{n+1} = \\sin(a y_n) + c \\cos(a x_n), \\
-            y_{n+1} = \\sin(b x_n) + d \\cos(b y_n)
-            \\]`,
-            params: {
-                a: {min:-2.5, max:2.5, step:0.01, value:-1.4},
-                b: {min:-2.5, max:2.5, step:0.01, value:1.6},
-                c: {min:-2.5, max:2.5, step:0.01, value:1.0},
-                d: {min:-2.5, max:2.5, step:0.01, value:0.7}
-            },
-            iterate: (x, y, p) => {
-                const xNew = Math.sin(p.a*y) + p.c*Math.cos(p.a*x);
-                const yNew = Math.sin(p.b*x) + p.d*Math.cos(p.b*y);
-                return [xNew, yNew];
-            },
-            reset: () => [0.1,0.0],
-            dimension: 2,
-            defaultScale: 1.0
-        },
-        'peterdejong': {
-            formula: `
-            \\[
-            x_{n+1} = \\sin(a y_n) - \\cos(b x_n), \\
-            y_{n+1} = \\sin(c x_n) - \\cos(d y_n)
-            \\]`,
-            params: {
-                a: {min:-3, max:3, step:0.01, value:1.4},
-                b: {min:-3, max:3, step:0.01, value:-2.3},
-                c: {min:-3, max:3, step:0.01, value:2.4},
-                d: {min:-3, max:3, step:0.01, value:-2.1}
-            },
-            iterate: (x, y, p) => {
-                const xNew = Math.sin(p.a*y) - Math.cos(p.b*x);
-                const yNew = Math.sin(p.c*x) - Math.cos(p.d*y);
-                return [xNew, yNew];
-            },
-            reset: () => [0.0,0.0],
-            dimension: 2,
-            defaultScale: 1.0
-        },
-        'lorenz': {
-            formula: `
-            \\[
-            \\frac{dx}{dt} = \\sigma (y - x), \\
-            \\frac{dy}{dt} = x(\\rho - z) - y, \\
-            \\frac{dz}{dt} = xy - \\beta z
-            \\]`,
-            params: {
-                sigma: {min:0, max:20, step:0.01, value:10},
-                rho: {min:0, max:50, step:0.1, value:28},
-                beta: {min:0, max:10, step:0.01, value:2.6667}
-            },
-            dt: 0.01,
-            iterate: (x, y, z, p, dt) => {
-                const dx = p.sigma*(y - x);
-                const dy = x*(p.rho - z)-y;
-                const dz = x*y - p.beta*z;
-                return [x+dx*dt, y+dy*dt, z+dz*dt];
-            },
-            reset: () => [0.1,0.0,0.0],
-            dimension: 3,
-            defaultScale: 1.0
-        },
-        'rossler': {
-            formula: `
-            \\[
-            \\frac{dx}{dt} = -y - z, \\
-            \\frac{dy}{dt} = x + a y, \\
-            \\frac{dz}{dt} = b + z(x - c)
-            \\]`,
-            params: {
-                a: {min:-1, max:1, step:0.001, value:0.2},
-                b: {min:0, max:1, step:0.001, value:0.2},
-                c: {min:1, max:30, step:0.1, value:5.7}
-            },
-            dt: 0.01,
-            iterate: (x, y, z, p, dt) => {
-                const dx = -y - z;
-                const dy = x + p.a*y;
-                const dz = p.b + z*(x - p.c);
-                return [x+dx*dt, y+dy*dt, z+dz*dt];
-            },
-            reset: () => [0.1,0.0,0.0],
-            dimension: 3,
-            defaultScale: 1.0
-        }
-    };
+    initParticles();
+    initUI();
+    updateParametersUI();
+    updateEquations();
 
-    // UI elements
-    const attractorSelect = document.getElementById('attractorSelect');
-    const paramSlidersDiv = document.getElementById('paramSliders');
-    const equationBlock = document.getElementById('equationBlock');
-    const particleColorInput = document.getElementById('particleColor');
-    const bgColorInput = document.getElementById('bgColor');
-    const colorModeSelect = document.getElementById('colorMode');
-    const intensitySlider = document.getElementById('intensitySlider');
-    const intensityVal = document.getElementById('intensityVal');
-    const scaleSlider = document.getElementById('scaleSlider');
-    const scaleVal = document.getElementById('scaleVal');
-    const resetScaleBtn = document.getElementById('resetScaleBtn');
+    animate();
+};
 
-    let currentAttractor = 'clifford';
-    let params = {};
-    let state;
-    let particleColor = particleColorInput.value;
-    let bgColor = bgColorInput.value;
-    let intensity = parseInt(intensitySlider.value);
-    let scale = parseFloat(scaleSlider.value);
-    let hue = 0;
-    let frameCount = 0;
-    let mouseX = 0, mouseY = 0;
-
-    document.addEventListener('mousemove', (e) => {
-        mouseX = e.clientX / window.innerWidth;
-        mouseY = e.clientY / window.innerHeight;
+function initUI(){
+    document.getElementById('particleCount').addEventListener('input', e=>{
+        particleCount = parseInt(e.target.value);
+        document.getElementById('particleCountVal').textContent = particleCount;
+        initParticles();
+    });
+    document.getElementById('speed').addEventListener('input', e=>{
+        speed = parseFloat(e.target.value);
+        document.getElementById('speedVal').textContent = speed+"x";
+    });
+    document.getElementById('colorScheme').addEventListener('change', e=>{
+        colorScheme = e.target.value;
+    });
+    document.getElementById('bgColor').addEventListener('change', e=>{
+        bgColor = e.target.value;
     });
 
-    document.addEventListener('keydown', (e) => {
-        const step = 0.1;
-        // Arrow keys tweak parameters
-        if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
-            const keys = Object.keys(params);
-            if (keys.length > 0) {
-                if (e.key==='ArrowUp') params[keys[0]] += step;
-                if (e.key==='ArrowDown') params[keys[0]] -= step;
-                if (keys.length>1) {
-                    if (e.key==='ArrowRight') params[keys[1]] += step;
-                    if (e.key==='ArrowLeft') params[keys[1]] -= step;
-                }
-            }
-            updateSlidersUI();
-            updateEquation();
-        }
-
-        // Space: randomize parameters
-        if (e.key === ' ') randomizeParams();
-
-        // Enter: reset position
-        if (e.key === 'Enter') {
-            resetAttractor();
-            clearCanvas();
-        }
+    document.getElementById('attractorType').addEventListener('change', e=>{
+        attractorType = e.target.value;
+        setPredefinedParameters();
+        updateParametersUI();
+        resetParticles();
+        updateEquations();
     });
 
-    particleColorInput.addEventListener('input', () => {
-        particleColor = particleColorInput.value;
+    document.getElementById('resetBtn').addEventListener('click', resetParticles);
+    document.getElementById('pauseBtn').addEventListener('click', ()=>{ paused = !paused; });
+    document.getElementById('saveBtn').addEventListener('click', saveImage);
+
+    document.getElementById('helpBtn').addEventListener('click', ()=>{
+        const helpOverlay = document.getElementById('helpOverlay');
+        helpOverlay.style.display = (helpOverlay.style.display==='none'?'block':'none');
     });
 
-    bgColorInput.addEventListener('input', () => {
-        bgColor = bgColorInput.value;
-        clearCanvas();
+    document.getElementById('equationsBtn').addEventListener('click', ()=>{
+        let eqOverlay = document.getElementById('equationsOverlay');
+        updateEquations();
+        eqOverlay.style.display = (eqOverlay.style.display==='none'?'block':'none');
     });
+    
+    window.addEventListener('keydown', handleKey);
+    canvas.addEventListener('mousedown', e=>{mouseDown=true; lastMouseX=e.clientX; lastMouseY=e.clientY;});
+    canvas.addEventListener('mouseup', ()=>{mouseDown=false;});
+    canvas.addEventListener('mousemove', mouseMove);
+    window.addEventListener('resize', resizeCanvas);
+}
 
-    intensitySlider.addEventListener('input', () => {
-        intensity = parseInt(intensitySlider.value);
-        intensityVal.textContent = intensity;
-    });
-    intensityVal.textContent = intensity;
+function updateEquations(){
+    let eqDiv = document.getElementById('equationsContent');
+    let eqText = "";
 
-    scaleSlider.addEventListener('input', () => {
-        scale = parseFloat(scaleSlider.value);
-        scaleVal.textContent = scale.toFixed(1);
-    });
-    scaleVal.textContent = scale.toFixed(1);
-
-    resetScaleBtn.addEventListener('click', () => {
-        scale = attractors[currentAttractor].defaultScale;
-        scaleSlider.value = scale;
-        scaleVal.textContent = scale.toFixed(1);
-    });
-
-    attractorSelect.addEventListener('change', () => {
-        currentAttractor = attractorSelect.value;
-        setupAttractor();
-    });
-
-    function setupAttractor() {
-        const att = attractors[currentAttractor];
-        params = {};
-        for (let p in att.params) {
-            params[p] = att.params[p].value;
-        }
-        buildSliders();
-        resetAttractor();
-        clearCanvas();
-        updateEquation();
-        scale = att.defaultScale;
-        scaleSlider.value = scale;
-        scaleVal.textContent = scale.toFixed(1);
+    if(attractorType==='lorenz'){
+        eqText = `
+        \\[
+        \\frac{dx}{dt} = \\sigma(y - x)
+        \\]
+        \\[
+        \\frac{dy}{dt} = x(\\rho - z) - y
+        \\]
+        \\[
+        \\frac{dz}{dt} = xy - \\beta z
+        \\]`;
+    } else if(attractorType==='rossler'){
+        eqText = `
+        \\[
+        \\frac{dx}{dt} = -y - z
+        \\]
+        \\[
+        \\frac{dy}{dt} = x + a y
+        \\]
+        \\[
+        \\frac{dz}{dt} = b + z(x - c)
+        \\]`;
+    } else if(attractorType==='halvorsen'){
+        eqText = `
+        \\[
+        \\frac{dx}{dt} = -a x - y - z(y + x)
+        \\]
+        \\[
+        \\frac{dy}{dt} = -a y - z - x(z + y)
+        \\]
+        \\[
+        \\frac{dz}{dt} = -a z - x - y(x + z)
+        \\]`;
+    } else if(attractorType==='chen'){
+        eqText = `
+        \\[
+        \\frac{dx}{dt} = a(y - x)
+        \\]
+        \\[
+        \\frac{dy}{dt} = (c - a)x - xz + c y
+        \\]
+        \\[
+        \\frac{dz}{dt} = xy - b z
+        \\]`;
+    } else if(attractorType==='aizawa'){
+        eqText = `
+        \\[
+        \\frac{dx}{dt} = (z - b)x - d y
+        \\]
+        \\[
+        \\frac{dy}{dt} = d x + (z - b) y
+        \\]
+        \\[
+        \\frac{dz}{dt} = c + z(a - z^{2}) + \\frac{x^{2} + y^{2}}{2}
+        \\]`;
+    } else if(attractorType==='dadras'){
+        eqText = `
+        \\[
+        \\frac{dx}{dt} = y - x
+        \\]
+        \\[
+        \\frac{dy}{dt} = x z + p y
+        \\]
+        \\[
+        \\frac{dz}{dt} = q z + x y
+        \\]`;
     }
 
-    function buildSliders() {
-        paramSlidersDiv.innerHTML = '';
-        const att = attractors[currentAttractor];
-        for (let p in att.params) {
-            const group = document.createElement('div');
-            group.className = 'param-group';
-
-            const label = document.createElement('label');
-            label.innerText = p;
-            group.appendChild(label);
-
-            const range = document.createElement('input');
-            range.type = 'range';
-            range.min = att.params[p].min;
-            range.max = att.params[p].max;
-            range.step = att.params[p].step;
-            range.value = params[p];
-            range.addEventListener('input', (e) => {
-                params[p] = parseFloat(e.target.value);
-                valSpan.innerText = params[p].toFixed(4);
-                updateEquation();
-            });
-            group.appendChild(range);
-
-            const valSpan = document.createElement('span');
-            valSpan.className = 'param-value';
-            valSpan.innerText = params[p].toFixed(4);
-            group.appendChild(valSpan);
-
-            paramSlidersDiv.appendChild(group);
-        }
+    eqDiv.innerHTML = eqText;
+    if (window.MathJax && window.MathJax.typeset) {
+        MathJax.typeset();
     }
+}
 
-    function updateSlidersUI() {
-        const att = attractors[currentAttractor];
-        const groups = paramSlidersDiv.querySelectorAll('.param-group');
-        let i = 0;
-        for (let p in att.params) {
-            const range = groups[i].querySelector('input[type="range"]');
-            const valSpan = groups[i].querySelector('.param-value');
-            range.value = params[p];
-            valSpan.innerText = params[p].toFixed(4);
-            i++;
-        }
+function setPredefinedParameters() {
+    Object.assign(attractorParams[attractorType], prettyParameters[attractorType]);
+    resetParticles();
+}
+
+function updateParametersUI(){
+    const container = document.getElementById('paramContainer');
+    container.innerHTML = "";
+    const params = attractorParams[attractorType];
+    const ranges = paramRanges[attractorType];
+
+    for(let key in params){
+        let val = params[key];
+        let rangeSpec = ranges[key];
+        if(!rangeSpec) continue; 
+        // Create UI elements
+        let group = document.createElement('div');
+        group.className = 'param-group';
+
+        let labelRow = document.createElement('div');
+        labelRow.className = 'label-row';
+
+        let label = document.createElement('label');
+        label.textContent = key;
+
+        let span = document.createElement('span');
+        span.id = key+"Val";
+        span.textContent = val.toFixed(3);
+
+        let input = document.createElement('input');
+        input.type = 'range';
+        input.id = key;
+        input.min = rangeSpec.min;
+        input.max = rangeSpec.max;
+        input.step = rangeSpec.step;
+        input.value = val;
+        input.addEventListener('input', e=>{
+            const newVal = parseFloat(e.target.value);
+            attractorParams[attractorType][key] = newVal;
+            span.textContent = newVal.toFixed(3);
+            resetParticles();
+        });
+
+        labelRow.appendChild(label);
+        labelRow.appendChild(span);
+        group.appendChild(labelRow);
+        group.appendChild(input);
+        container.appendChild(group);
     }
+}
 
-    function updateEquation() {
-        equationBlock.innerHTML = attractors[currentAttractor].formula;
-        MathJax.typesetPromise();
-    }
+function handleKey(e) {
+    let step = e.shiftKey ? 1.0 : 0.1;
+    if (e.code === 'Space') {
+        paused = !paused;
+    } else if (e.code === 'Enter') {
+        setPredefinedParameters();
+        updateParametersUI();
+    } else {
+        // For arrow keys, try adjusting first parameter or a known param
+        let p = attractorParams[attractorType];
+        if(!p) return;
+        const keys = Object.keys(p);
+        if(keys.length === 0) return;
 
-    function resetAttractor() {
-        state = attractors[currentAttractor].reset();
-    }
-
-    function randomizeParams() {
-        const att = attractors[currentAttractor];
-        for (let p in att.params) {
-            const r = att.params[p];
-            params[p] = r.min + Math.random()*(r.max - r.min);
-        }
-        updateSlidersUI();
-        updateEquation();
-    }
-
-    function clearCanvas() {
-        ctx.fillStyle = bgColor;
-        ctx.fillRect(0,0,canvas.width,canvas.height);
-    }
-
-    function resizeCanvas() {
-        canvas.width = window.innerWidth - 300;
-        canvas.height = window.innerHeight;
-    }
-
-    window.addEventListener('resize', () => {
-        resizeCanvas();
-        clearCanvas();
-    });
-
-    // Start app
-    clearCanvas();
-    setupAttractor();
-
-    function draw() {
-        const att = attractors[currentAttractor];
-
-        // Mouse perturbation
-        const mxp = (mouseX - 0.5)*0.01;
-        const myp = (mouseY - 0.5)*0.01;
-        let pCopy = {...params};
-        const keys = Object.keys(pCopy);
-        if (keys.length > 0) {
-            pCopy[keys[0]] += mxp;
-            if (keys.length > 1) pCopy[keys[1]] += myp;
-        }
-
-        // Rainbow mode
-        if (colorModeSelect.value === 'rainbow') {
-            hue = (hue + 1) % 360;
-        }
-
-        // Draw points
-        if (att.dimension === 2) {
-            for (let i=0; i<intensity; i++) {
-                state = att.iterate(state[0], state[1], pCopy);
-                plotPoint2D(state[0], state[1]);
-            }
+        // For simplicity, arrow keys adjust first param if available
+        let primaryParam = keys[0];
+        if(attractorType==='lorenz'){
+            // For lorenz, left/right = sigma, up/down = rho
+            if(e.code==='ArrowUp') { p.rho += step; }
+            else if(e.code==='ArrowDown') { p.rho -= step; }
+            else if(e.code==='ArrowLeft') { p.sigma -= step; }
+            else if(e.code==='ArrowRight') { p.sigma += step; }
         } else {
-            for (let i=0; i<Math.min(intensity,500); i++) {
-                state = att.iterate(state[0], state[1], state[2], pCopy, att.dt);
-                plotPoint3D(state[0], state[1], state[2]);
+            // Otherwise, just pick first param to modify
+            if(e.code==='ArrowUp'||e.code==='ArrowRight') p[primaryParam] += step;
+            if(e.code==='ArrowDown'||e.code==='ArrowLeft') p[primaryParam] -= step;
+        }
+        updateParametersUI();
+        resetParticles();
+    }
+}
+
+function mouseMove(e){
+    if(!mouseDown) return;
+    let dx = e.clientX - lastMouseX;
+    let dy = e.clientY - lastMouseY;
+    rotationX += dy*0.01;
+    rotationY += dx*0.01;
+    lastMouseX = e.clientX;
+    lastMouseY = e.clientY;
+}
+
+function resizeCanvas() {
+    canvas.width = window.innerWidth - 300;
+    canvas.height = window.innerHeight;
+}
+
+function initParticles(){
+    particles = [];
+    for(let i=0; i<particleCount; i++){
+        let hue = Math.random()*360;
+        let hueInc = 0.5+Math.random();
+        particles.push({
+            x: Math.random()*10-5,
+            y: Math.random()*10-5,
+            z: Math.random()*10-5,
+            hue: hue,
+            hueInc: hueInc
+        });
+    }
+}
+
+function resetParticles(){
+    initParticles();
+}
+
+function stepLorenz(p){
+    let {sigma,rho,beta} = attractorParams.lorenz;
+    let dx = sigma*(p.y - p.x);
+    let dy = p.x*(rho - p.z)-p.y;
+    let dz = p.x*p.y - beta*p.z;
+    p.x += dx*0.01*speed;
+    p.y += dy*0.01*speed;
+    p.z += dz*0.01*speed;
+}
+
+function stepRossler(p){
+    let {a,b,c} = attractorParams.rossler;
+    let dx = -p.y - p.z;
+    let dy = p.x + a*p.y;
+    let dz = b + p.z*(p.x - c);
+    p.x+=dx*0.01*speed;
+    p.y+=dy*0.01*speed;
+    p.z+=dz*0.01*speed;
+}
+
+function stepHalvorsen(p){
+    let {a} = attractorParams.halvorsen;
+    let dx = -a*p.x - p.y - p.z*(p.y+ p.x);
+    let dy = -a*p.y - p.z - p.x*(p.z+ p.y);
+    let dz = -a*p.z - p.x - p.y*(p.x+ p.z);
+    p.x+=dx*0.005*speed;
+    p.y+=dy*0.005*speed;
+    p.z+=dz*0.005*speed;
+}
+
+function stepChen(p){
+    let {a,b,c} = attractorParams.chen;
+    let dx = a*(p.y - p.x);
+    let dy = (c - a)*p.x - p.x*p.z + c*p.y;
+    let dz = p.x*p.y - b*p.z;
+    p.x+=dx*0.01*speed;
+    p.y+=dy*0.01*speed;
+    p.z+=dz*0.01*speed;
+}
+
+function stepAizawa(p){
+    let {a,b,c,d} = attractorParams.aizawa;
+    let dx = (p.z - b)*p.x - d*p.y;
+    let dy = d*p.x + (p.z - b)*p.y;
+    let dz = c + p.z*(a - p.z*p.z) + (p.x*p.x+p.y*p.y)/2;
+    p.x+=dx*0.01*speed;
+    p.y+=dy*0.01*speed;
+    p.z+=dz*0.01*speed;
+}
+
+function stepDadras(p){
+    let {p:pp,q} = attractorParams.dadras;
+    let dx = p.y - p.x;
+    let dy = p.x*p.z + pp*p.y;
+    let dz = q*p.z + p.x*p.y;
+    p.x+=dx*0.01*speed;
+    p.y+=dy*0.01*speed;
+    p.z+=dz*0.01*speed;
+}
+
+function animate(){
+    requestAnimationFrame(animate);
+
+    ctx.fillStyle = hexToRGBA(bgColor,0.1);
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    let centerX = canvas.width/2;
+    let centerY = canvas.height/2;
+    let scale = 10;
+
+    if(!paused){
+        for(let p of particles){
+            switch(attractorType){
+                case 'lorenz': stepLorenz(p); break;
+                case 'rossler': stepRossler(p); break;
+                case 'halvorsen': stepHalvorsen(p); break;
+                case 'chen': stepChen(p); break;
+                case 'aizawa': stepAizawa(p); break;
+                case 'dadras': stepDadras(p); break;
             }
         }
-
-        // Fade occasionally
-        frameCount++;
-        if (frameCount % 50 === 0) fadeCanvas();
-
-        requestAnimationFrame(draw);
     }
 
-    function plotPoint2D(x, y) {
-        const localScale = Math.min(canvas.width, canvas.height)/4 * scale;
-        const px = canvas.width/2 + x*localScale;
-        const py = canvas.height/2 + y*localScale;
-        setParticleColor();
+    for(let p of particles){
+        let X = p.x, Y = p.y, Z = p.z;
+
+        let cosX = Math.cos(rotationX), sinX = Math.sin(rotationX);
+        let cosY = Math.cos(rotationY), sinY = Math.sin(rotationY);
+
+        let xz = X*cosY - Z*sinY;
+        let zz = Z*cosY + X*sinY;
+        let yz = Y*cosX - zz*sinX;
+
+        let px = xz*scale + centerX;
+        let py = yz*scale + centerY;
+
+        ctx.fillStyle = getColor(p);
         ctx.fillRect(px, py, 2, 2);
     }
+}
 
-    function plotPoint3D(x, y, z) {
-        const localScale = Math.min(canvas.width, canvas.height)/30 * scale;
-        const px = canvas.width/2 + x*localScale;
-        const py = canvas.height/2 + y*localScale;
-        setParticleColor();
-        ctx.fillRect(px, py, 2, 2);
+function getColor(p){
+    p.hue += p.hueInc*speed;
+    if(p.hue>360) p.hue-=360;
+    let h = p.hue;
+    switch(colorScheme){
+        case "rainbow":
+            return `hsl(${h},100%,50%)`;
+        case "fire":
+            return `hsl(${(h % 60)},100%,50%)`;
+        case "cool":
+            return `hsl(${180 + (h % 60)},80%,60%)`;
+        case "neon":
+            return `hsl(${h},100%,50%)`;
+        case "pastel":
+            return `hsl(${h},50%,85%)`;
+        case "grayscale":
+            let val = Math.floor(h) % 255;
+            return `rgb(${val},${val},${val})`;
+        default:
+            return `hsl(${h},100%,50%)`;
     }
+}
 
-    function setParticleColor() {
-        if (colorModeSelect.value === 'rainbow') {
-            ctx.fillStyle = `hsl(${hue},100%,70%)`;
-        } else {
-            ctx.fillStyle = particleColor;
-        }
-    }
 
-    function fadeCanvas() {
-        ctx.globalAlpha = 0.1;
-        ctx.fillStyle = bgColor;
-        ctx.fillRect(0,0,canvas.width,canvas.height);
-        ctx.globalAlpha = 1.0;
-    }
+function saveImage(){
+    let link = document.createElement('a');
+    link.download = 'attractool.png';
+    link.href = canvas.toDataURL();
+    link.click();
+}
 
-    draw();
-});
+function hexToRGBA(hex, alpha) {
+    hex = hex.replace('#','');
+    let r = parseInt(hex.substring(0,2),16);
+    let g = parseInt(hex.substring(2,4),16);
+    let b = parseInt(hex.substring(4,6),16);
+    return `rgba(${r},${g},${b},${alpha})`;
+}

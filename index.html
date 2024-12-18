@@ -1,66 +1,101 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Chaotic Attractors</title>
-    <link rel="stylesheet" href="style.css" />
-    <!-- MathJax for LaTeX rendering -->
-    <script>
-      MathJax = {
-        tex: {inlineMath: [['$', '$'], ['\\(', '\\)']]},
-        svg: {fontCache: 'global'}
-      };
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg-full.js" async id="MathJax-script"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>attractool</title>
+<link rel="stylesheet" href="style.css"/>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async 
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js">
+</script>
 </head>
 <body>
-    <div class="container">
-        <div class="controls">
-            <h1>Chaotic Attractors</h1>
-
-            <label>Attractor:</label>
-            <select id="attractorSelect">
-                <option value="clifford">Clifford</option>
-                <option value="peterdejong">Peter De Jong</option>
-                <option value="lorenz">Lorenz</option>
-                <option value="rossler">Rössler</option>
-            </select>
-
-            <div id="paramSliders"></div>
-
-            <label>Color Mode:</label>
-            <select id="colorMode">
-                <option value="static">Static</option>
-                <option value="rainbow">Rainbow</option>
-            </select>
-
-            <label>Particle Color:</label>
-            <input type="color" id="particleColor" value="#ffffff">
-
-            <label>Background Color:</label>
-            <input type="color" id="bgColor" value="#000000">
-
-            <label>Intensity: <span id="intensityVal"></span></label>
-            <input type="range" id="intensitySlider" min="10" max="1000" step="10" value="200">
-
-            <label>Scale: <span id="scaleVal"></span></label>
-            <input type="range" id="scaleSlider" min="0.1" max="10" step="0.1" value="1">
-            <button id="resetScaleBtn">Reset Scale</button>
-
-            <div class="formula" id="equationBlock"></div>
-
-            <div class="tips">
-                <ul>
-                    <li>Space: randomize</li>
-                    <li>Enter: reset</li>
-                </ul>
+<div class="container">
+    <div class="sidebar">
+        <h1>attractool</h1>
+        
+        <div class="section">
+            <h2>Attractor</h2>
+            <div class="param-group">
+                <label>Type</label>
+                <select id="attractorType">
+                    <option value="lorenz">Lorenz</option>
+                    <option value="rossler">Rössler</option>
+                    <option value="halvorsen">Halvorsen</option>
+                    <option value="chen">Chen</option>
+                    <option value="aizawa">Aizawa</option>
+                    <option value="dadras">Dadras</option>
+                </select>
             </div>
         </div>
-        <div class="canvas-container">
-            <canvas id="attractorCanvas"></canvas>
+
+        <div class="section">
+            <h2>Parameters</h2>
+            <div id="paramContainer"></div>
+        </div>
+
+        <div class="section">
+            <h2>Visualization</h2>
+            <div class="param-group">
+                <div class="label-row">
+                    <label>Particles</label>
+                    <span id="particleCountVal">1000</span>
+                </div>
+                <input type="range" id="particleCount" min="100" max="5000" step="100" value="1000"/>
+            </div>
+            <div class="param-group">
+                <div class="label-row">
+                    <label>Speed</label>
+                    <span id="speedVal">1x</span>
+                </div>
+                <input type="range" id="speed" min="0.5" max="5" step="0.1" value="1"/>
+            </div>
+            <div class="param-group">
+                <label>Color Scheme</label>
+                <select id="colorScheme">
+                    <option value="rainbow">Rainbow</option>
+                    <option value="fire">Fire</option>
+                    <option value="cool">Cool</option>
+                    <option value="neon">Neon</option>
+                    <option value="pastel">Pastel</option>
+                    <option value="grayscale">Grayscale</option>
+                </select>
+            </div>
+            <div class="param-group">
+                <label>Background</label>
+                <input type="color" id="bgColor" value="#000000"/>
+            </div>
         </div>
     </div>
-    <script src="script.js"></script>
+    <div class="main">
+        <canvas id="canvas"></canvas>
+        
+        <div class="top-bar">
+            <button id="resetBtn" title="Reset Particles">Reset</button>
+            <button id="pauseBtn" title="Pause/Resume Simulation">Pause</button>
+            <button id="saveBtn" title="Save Current View as Image">Save Image</button>
+            <button id="equationsBtn" title="Show Equations">Equations</button>
+            <button id="helpBtn" title="Help & Controls">?</button>
+        </div>
+
+        <div class="overlay" id="helpOverlay" style="display:none;">
+            <div class="overlay-content">
+                <h3>Keyboard</h3>
+                <p>Arrow Keys: Adjust parameters<br/>Space: pause simulation<br/>Enter: reset simulation</p>
+                <h3>Mouse</h3>
+                <p>Drag: Rotate view</p>
+            </div>
+        </div>
+        
+        <div class="overlay" id="equationsOverlay" style="display:none;">
+            <div class="overlay-content" id="equationsContent">
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>
