@@ -31,6 +31,8 @@ body {
   align-items: center;
   padding: 10px;
   gap: 10px;
+  position: relative;
+  z-index: 300;
 }
 
 .top-bar-mobile .mobile-title {
@@ -45,28 +47,36 @@ body {
 
 .sidebar {
   width: 300px;
-  background: linear-gradient(135deg, #2a2a2a, #1c1c1c);
+  background: linear-gradient(135deg, #1d1d1d, #111);
   display: flex;
   flex-direction: column;
   padding: 20px;
   box-sizing: border-box;
   border-right: 1px solid #333;
-  overflow: auto;
-  transition: transform 0.3s ease;
+  overflow: hidden;
+  position: relative;
   z-index: 100;
 }
 
-.sidebar h1 {
-  margin: 0 0 20px 0;
+.title-centered {
+  text-align: center;
+  margin-bottom: 20px;
   font-size: 24px;
-  color: #fff;
-  text-transform: uppercase;
-  letter-spacing: 1px;
   white-space: nowrap;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.highlight-attrac {
+  font-weight: bold;
+}
+
+.highlight-tool {
+  font-weight: bold;
 }
 
 .section {
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
 .section h2 {
@@ -110,6 +120,24 @@ body {
   white-space: nowrap;
 }
 
+.simple-button {
+  background: #333;
+  border: 1px solid #444;
+  border-radius: 4px;
+  color: #fff;
+  padding: 5px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.3s;
+  display: block;
+  margin: 0 auto;
+  text-transform: uppercase;
+}
+
+.simple-button:hover {
+  background: #444;
+}
+
 .main {
   flex: 1;
   display: flex;
@@ -142,8 +170,6 @@ body {
   padding: 6px 10px;
   font-size: 12px;
   cursor: pointer;
-  transition: background 0.3s, color 0.3s;
-  position: relative;
   text-transform: uppercase;
 }
 
@@ -271,6 +297,7 @@ button {
     transform: translateX(-100%);
     width: 260px;
     overflow-y: auto;
+    z-index: 200;
   }
 
   .sidebar.open {
@@ -294,7 +321,7 @@ button {
   .param-group label,
   .section h2,
   .sidebar h1,
-  .top-bar-mobile .mobile-title {
+  .mobile-title {
     font-size: 14px;
   }
 

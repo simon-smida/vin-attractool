@@ -14,14 +14,18 @@
     <div class="container">
         <div class="top-bar-mobile">
             <button id="menuToggleBtn" class="icon-button" title="Toggle Sidebar">☰</button>
-            <h1 class="mobile-title">attractool</h1>
+            <h1 class="mobile-title">
+                <span class="highlight-attrac">ATTRAC</span><span class="highlight-tool">TOOL</span>
+            </h1>
         </div>
         <div class="sidebar">
-            <h1>attractool</h1>
+            <h1 class="title-centered">
+                <span class="highlight-attrac">ATTRAC</span><span class="highlight-tool">TOOL</span>
+            </h1>
             <div class="section">
                 <h2>Attractor</h2>
                 <div class="param-group">
-                    <label>Type</label>
+                    <!-- <label>Type</label> -->
                     <select id="attractorType">
                         <option value="lorenz">Lorenz</option>
                         <option value="rossler">Rössler</option>
@@ -35,6 +39,7 @@
             <div class="section">
                 <h2>Parameters</h2>
                 <div id="paramContainer"></div>
+                <button id="randomizeBtn" class="simple-button" title="Randomize Parameters">🔀</button>
             </div>
             <div class="section">
                 <h2>Visualization</h2>
@@ -53,14 +58,15 @@
                     <input type="range" id="speed" min="0.5" max="5" step="0.1" value="1" />
                 </div>
                 <div class="param-group">
-                    <label>Color Scheme</label>
+                    <label>Color Scheme 🎨</label>
                     <select id="colorScheme">
-                        <option value="rainbow">Rainbow</option>
-                        <option value="fire">Fire</option>
-                        <option value="cool">Cool</option>
-                        <option value="neon">Neon</option>
-                        <option value="pastel">Pastel</option>
-                        <option value="grayscale">Grayscale</option>
+                        <option value="rainbow">🌈 Rainbow</option>
+                        <option value="fire">🔥 Fire</option>
+                        <option value="cool">❄️ Cool</option>
+                        <option value="neon">⚡ Neon</option>
+                        <option value="pastel">🧁 Pastel</option>
+                        <option value="grayscale">⚫ Grayscale</option>
+                        <option value="cyberpunk">💜 Cyberpunk</option>
                     </select>
                 </div>
             </div>
@@ -94,8 +100,12 @@
                             <span>(Enter) : Reset simulation</span>
                         </div>
                         <div class="control-row">
-                            <span class="key">Mouse Drag</span>
+                            <span><strong>Mouse Drag</strong></span>
                             <span>: Rotate view</span>
+                        </div>
+                        <div class="control-row">
+                            <span><strong>Mouse Wheel</strong></span>
+                            <span>: Zoom in/out</span>
                         </div>
                     </div>
                 </div>
@@ -104,8 +114,7 @@
                 <div class="overlay-content" id="equationsContent"></div>
             </div>
         </div>
-    </div>
-    <script src="script.js"></script>
+        <script src="script.js"></script>
 </body>
 
 </html>

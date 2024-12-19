@@ -13,6 +13,9 @@ let bgColor = "#000000";
 let attractorType = "lorenz";
 let sidebarOpen = false;
 
+let scale = 10; 
+let pinchStartDist = null;
+
 const attractorParams = {
     lorenz: { sigma: 10, rho: 28, beta: 2.667 },
     rossler: { a: 0.2, b: 0.2, c: 5.7 },
@@ -62,6 +65,19 @@ const paramRanges = {
     }
 };
 
+// Define title color mappings based on colorScheme
+// We'll pick contrasting or related hues for ATTRAC and TOOL
+// Just a heuristic: For each scheme, pick two distinct but complementary hues
+const titleColors = {
+    "rainbow":   { attrac: "hsl(300, 100%, 60%)", tool: "hsl(180, 100%, 50%)" },
+    "fire":      { attrac: "hsl(20, 100%, 60%)", tool: "hsl(40, 100%, 50%)" },
+    "cool":      { attrac: "hsl(200, 50%, 70%)", tool: "hsl(160, 50%, 60%)" },
+    "neon":      { attrac: "hsl(300, 100%, 60%)", tool: "hsl(180, 100%, 50%)" },
+    "pastel":    { attrac: "hsl(300, 50%, 75%)", tool: "hsl(180, 50%, 75%)" },
+    "grayscale": { attrac: "hsl(0, 0%, 70%)", tool: "hsl(0, 0%, 50%)" },
+    "cyberpunk": { attrac: "hsl(300, 100%, 60%)", tool: "hsl(180, 100%, 50%)" }
+};
+
 window.onload = () => {
     canvas = document.getElementById('canvas');
     ctx = canvas.getContext('2d');
@@ -71,6 +87,7 @@ window.onload = () => {
     initUI();
     updateParametersUI();
     updateEquations();
+    updateTitleColors();
 
     animate();
 };
@@ -87,6 +104,7 @@ function initUI() {
     });
     document.getElementById('colorScheme').addEventListener('change', e => {
         colorScheme = e.target.value;
+        updateTitleColors();
     });
 
     document.getElementById('attractorType').addEventListener('change', e => {
@@ -121,11 +139,41 @@ function initUI() {
         eqOverlay.style.display = (eqOverlay.style.display === 'none' ? 'block' : 'none');
     });
 
+    document.getElementById('randomizeBtn').addEventListener('click', randomizeParameters);
+
     window.addEventListener('keydown', handleKey);
     canvas.addEventListener('mousedown', e => { mouseDown = true; lastMouseX = e.clientX; lastMouseY = e.clientY; });
     canvas.addEventListener('mouseup', () => { mouseDown = false; });
     canvas.addEventListener('mousemove', mouseMove);
     window.addEventListener('resize', resizeCanvas);
+
+    canvas.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
+        scale *= zoomFactor;
+        scale = Math.max(1, Math.min(100, scale));
+    }, { passive: false });
+
+    canvas.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 2) {
+            pinchStartDist = getTouchDistance(e);
+        }
+    }, { passive: true });
+
+    canvas.addEventListener('touchmove', (e) => {
+        if (e.touches.length === 2 && pinchStartDist !== null) {
+            e.preventDefault();
+            const currentDist = getTouchDistance(e);
+            const zoomFactor = currentDist / pinchStartDist;
+            scale *= zoomFactor;
+            scale = Math.max(1, Math.min(100, scale));
+            pinchStartDist = currentDist;
+        }
+    }, { passive: false });
+    
+    canvas.addEventListener('touchend', () => {
+        pinchStartDist = null;
+    });
 
     const menuToggleBtn = document.getElementById('menuToggleBtn');
     const sidebar = document.querySelector('.sidebar');
@@ -137,6 +185,26 @@ function initUI() {
             sidebar.classList.remove('open');
         }
     });
+}
+
+function randomizeParameters() {
+    const params = attractorParams[attractorType];
+    const ranges = paramRanges[attractorType];
+    for (let key in params) {
+        if (ranges[key]) {
+            let r = ranges[key];
+            let randomVal = r.min + Math.random() * (r.max - r.min);
+            params[key] = parseFloat(randomVal.toFixed(3));
+        }
+    }
+    updateParametersUI();
+    resetParticles();
+}
+
+function getTouchDistance(e) {
+    const dx = e.touches[0].clientX - e.touches[1].clientX;
+    const dy = e.touches[0].clientY - e.touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
 }
 
 function updateEquations() {
@@ -294,13 +362,13 @@ function handleKey(e) {
         const keys = Object.keys(p);
         if (keys.length === 0) return;
 
-        let primaryParam = keys[0];
         if (attractorType === 'lorenz') {
             if (e.code === 'ArrowUp') { p.rho += step; }
             else if (e.code === 'ArrowDown') { p.rho -= step; }
             else if (e.code === 'ArrowLeft') { p.sigma -= step; }
             else if (e.code === 'ArrowRight') { p.sigma += step; }
         } else {
+            let primaryParam = keys[0];
             if (e.code === 'ArrowUp' || e.code === 'ArrowRight') p[primaryParam] += step;
             if (e.code === 'ArrowDown' || e.code === 'ArrowLeft') p[primaryParam] -= step;
         }
@@ -319,7 +387,6 @@ function mouseMove(e) {
 }
 
 function resizeCanvas() {
-    // Adjust canvas size based on sidebar presence on larger screens
     const sidebar = document.querySelector('.sidebar');
     let sidebarWidth = window.innerWidth > 768 ? sidebar.offsetWidth : 0;
     canvas.width = window.innerWidth - sidebarWidth;
@@ -378,8 +445,8 @@ function stepHalvorsen(p) {
 function stepChen(p) {
     let { a, b, c } = attractorParams.chen;
     let dx = a * (p.y - p.x);
-    let dy = (c - a) * p.x - p.x * p.z + c * p.y;
-    let dz = p.x * p.y - b * p.z;
+    let dy = (c - a)*p.x - p.x*p.z + c*p.y;
+    let dz = p.x*p.y - b*p.z;
     p.x += dx * 0.01 * speed;
     p.y += dy * 0.01 * speed;
     p.z += dz * 0.01 * speed;
@@ -387,9 +454,9 @@ function stepChen(p) {
 
 function stepAizawa(p) {
     let { a, b, c, d } = attractorParams.aizawa;
-    let dx = (p.z - b) * p.x - d * p.y;
-    let dy = d * p.x + (p.z - b) * p.y;
-    let dz = c + p.z * (a - p.z * p.z) + (p.x * p.x + p.y * p.y) / 2;
+    let dx = (p.z - b)*p.x - d*p.y;
+    let dy = d*p.x + (p.z - b)*p.y;
+    let dz = c + p.z*(a - p.z*p.z) + (p.x*p.x + p.y*p.y)/2;
     p.x += dx * 0.01 * speed;
     p.y += dy * 0.01 * speed;
     p.z += dz * 0.01 * speed;
@@ -398,8 +465,8 @@ function stepAizawa(p) {
 function stepDadras(p) {
     let { p: pp, q } = attractorParams.dadras;
     let dx = p.y - p.x;
-    let dy = p.x * p.z + pp * p.y;
-    let dz = q * p.z + p.x * p.y;
+    let dy = p.x*p.z + pp*p.y;
+    let dz = q*p.z + p.x*p.y;
     p.x += dx * 0.01 * speed;
     p.y += dy * 0.01 * speed;
     p.z += dz * 0.01 * speed;
@@ -413,7 +480,7 @@ function animate() {
 
     let centerX = canvas.width / 2;
     let centerY = canvas.height / 2;
-    let scale = 10;
+    let scaleFactor = scale;
 
     if (!paused) {
         for (let p of particles) {
@@ -438,8 +505,8 @@ function animate() {
         let zz = Z * cosY + X * sinY;
         let yz = Y * cosX - zz * sinX;
 
-        let px = xz * scale + centerX;
-        let py = yz * scale + centerY;
+        let px = xz * scaleFactor + centerX;
+        let py = yz * scaleFactor + centerY;
 
         ctx.fillStyle = getColor(p);
         ctx.fillRect(px, py, 2, 2);
@@ -450,23 +517,41 @@ function getColor(p) {
     p.hue += p.hueInc * speed;
     if (p.hue > 360) p.hue -= 360;
     let h = p.hue;
+
     switch (colorScheme) {
         case "rainbow":
-            return `hsl(${h},100%,50%)`;
+            return `hsl(${h}, 100%, 50%)`;
         case "fire":
-            return `hsl(${(h % 60)},100%,50%)`;
+            return `hsl(${(h % 40) + 10}, 100%, 50%)`;
         case "cool":
-            return `hsl(${180 + (h % 60)},80%,60%)`;
+            return `hsl(${(h % 60) + 160}, 50%, 60%)`;
         case "neon":
-            return `hsl(${h},100%,50%)`;
+            return (Math.floor(h / 60) % 2 === 0)
+                ? `hsl(300, 100%, 60%)`
+                : `hsl(180, 100%, 50%)`;
         case "pastel":
-            return `hsl(${h},50%,85%)`;
+            return `hsl(${h}, 50%, 80%)`;
         case "grayscale":
-            let val = Math.floor(h) % 255;
-            return `rgb(${val},${val},${val})`;
+            let val = Math.floor((h / 360) * 255);
+            return `rgb(${val}, ${val}, ${val})`;
+        case "cyberpunk":
+            return (Math.floor(h / 90) % 2 === 0)
+                ? `hsl(300, 100%, 60%)`
+                : `hsl(180, 100%, 50%)`;
         default:
-            return `hsl(${h},100%,50%)`;
+            return `hsl(${h}, 100%, 50%)`;
     }
+}
+
+function updateTitleColors() {
+    const attracEls = document.querySelectorAll('.highlight-attrac');
+    const toolEls = document.querySelectorAll('.highlight-tool');
+    let scheme = titleColors[colorScheme];
+    if (!scheme) {
+        scheme = { attrac: "hsl(300, 100%, 60%)", tool: "hsl(180, 100%, 50%)" };
+    }
+    attracEls.forEach(el => el.style.color = scheme.attrac);
+    toolEls.forEach(el => el.style.color = scheme.tool);
 }
 
 function saveImage() {
