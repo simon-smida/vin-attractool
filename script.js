@@ -16,7 +16,6 @@ let sidebarOpen = false;
 let scale = 10; 
 let pinchStartDist = null;
 
-// Track touches for rotation
 let lastTouchX = null;
 let lastTouchY = null;
 let isSingleFinger = false;

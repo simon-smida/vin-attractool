@@ -76,7 +76,7 @@ body {
 }
 
 .section {
-  margin-bottom: 15px;
+  margin-bottom: 5px;
 }
 
 .section h2 {
@@ -279,7 +279,31 @@ button {
   font-size: 14px;
 }
 
-/* Responsive styles */
+.attribution {
+  text-align: center;
+  margin-top: -10px;
+  font-size: 12px;
+  color: #aaa;
+}
+
+.attribution a {
+  color: #66f;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.attribution a:hover {
+  text-decoration: underline;
+  color: #88f;
+}
+
+.attribution i {
+  font-size: 14px;
+}
+
+
 @media (max-width: 768px) {
   .container {
     flex-direction: column;
@@ -304,7 +328,6 @@ button {
     transform: translateX(0);
   }
 
-  /* Hide the sidebar title on small screens to avoid duplication */
   .sidebar .title-centered {
     display: none;
   }
@@ -349,6 +372,23 @@ button {
 
   #equationsBtn::after {
     content: '∑';
+    font-size: 16px;
+    color: #eee;
+    text-align: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  #randomizeBtn {
+    font-size: 0;
+    position: relative;
+    padding: 6px 10px;
+  }
+
+  #randomizeBtn::after {
+    content: '🍀';
     font-size: 16px;
     color: #eee;
     text-align: center;
