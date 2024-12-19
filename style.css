@@ -76,7 +76,7 @@ body {
 }
 
 .section {
-  margin-bottom: 5px;
+  margin-bottom: 8px;
 }
 
 .section h2 {
@@ -281,7 +281,7 @@ button {
 
 .attribution {
   text-align: center;
-  margin-top: -10px;
+  margin-top: -9px;
   font-size: 12px;
   color: #aaa;
 }
