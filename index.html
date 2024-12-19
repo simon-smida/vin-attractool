@@ -7,12 +7,15 @@
     <title>attractool</title>
     <link rel="stylesheet" href="style.css" />
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js">
-    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js"></script>
 </head>
 
 <body>
     <div class="container">
+        <div class="top-bar-mobile">
+            <button id="menuToggleBtn" class="icon-button" title="Toggle Sidebar">☰</button>
+            <h1 class="mobile-title">attractool</h1>
+        </div>
         <div class="sidebar">
             <h1>attractool</h1>
             <div class="section">
@@ -29,12 +32,10 @@
                     </select>
                 </div>
             </div>
-
             <div class="section">
                 <h2>Parameters</h2>
                 <div id="paramContainer"></div>
             </div>
-
             <div class="section">
                 <h2>Visualization</h2>
                 <div class="param-group">
@@ -62,45 +63,35 @@
                         <option value="grayscale">Grayscale</option>
                     </select>
                 </div>
-                <div class="param-group">
-                    <label>Background</label>
-                    <input type="color" id="bgColor" value="#000000" />
-                </div>
             </div>
         </div>
         <div class="main">
             <canvas id="canvas"></canvas>
-
             <div class="top-bar">
                 <button id="resetBtn" class="icon-button" title="Reset Particles">⟳</button>
                 <button id="pauseBtn" class="icon-button" title="Pause/Resume Simulation">⏸</button>
                 <button id="equationsBtn" title="Show Attractor Equations">Equations</button>
-                <button id="helpBtn" class="icon-button" title="Help & Controls">?</button>
+                <button id="helpBtn" class="icon-button" title="Help &amp; Controls">?</button>
             </div>
-
             <div class="overlay" id="helpOverlay" style="display:none;">
                 <div class="overlay-content">
                     <h3>Keyboard Controls</h3>
                     <div class="controls">
                         <div class="control-row">
-                            <span class="key">←</span>
-                            <span>/</span>
-                            <span class="key">→</span>
+                            <span class="key">←</span><span>/</span><span class="key">→</span>
                             <span>: Increase/Decrease 1st parameter</span>
                         </div>
                         <div class="control-row">
-                            <span class="key">↑</span>
-                            <span>/</span>
-                            <span class="key">↓</span>
+                            <span class="key">↑</span><span>/</span><span class="key">↓</span>
                             <span>: Increase/Decrease 2nd parameter</span>
                         </div>
                         <div class="control-row">
                             <span class="key">␣</span>
-                            <span>(Space): Pause/Resume simulation</span>
+                            <span>(Space) : Pause/Resume simulation</span>
                         </div>
                         <div class="control-row">
                             <span class="key">⏎</span>
-                            <span>(Enter): Reset simulation</span>
+                            <span>(Enter) : Reset simulation</span>
                         </div>
                         <div class="control-row">
                             <span class="key">Mouse Drag</span>
@@ -110,12 +101,10 @@
                 </div>
             </div>
             <div class="overlay" id="equationsOverlay" style="display:none;">
-                <div class="overlay-content" id="equationsContent">
-                </div>
+                <div class="overlay-content" id="equationsContent"></div>
             </div>
         </div>
     </div>
-
     <script src="script.js"></script>
 </body>
 

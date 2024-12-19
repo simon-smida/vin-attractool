@@ -11,6 +11,7 @@ let particles = [];
 let colorScheme = "rainbow";
 let bgColor = "#000000";
 let attractorType = "lorenz";
+let sidebarOpen = false;
 
 const attractorParams = {
     lorenz: { sigma: 10, rho: 28, beta: 2.667 },
@@ -87,9 +88,6 @@ function initUI() {
     document.getElementById('colorScheme').addEventListener('change', e => {
         colorScheme = e.target.value;
     });
-    document.getElementById('bgColor').addEventListener('change', e => {
-        bgColor = e.target.value;
-    });
 
     document.getElementById('attractorType').addEventListener('change', e => {
         attractorType = e.target.value;
@@ -112,7 +110,6 @@ function initUI() {
         }
     });
 
-
     document.getElementById('helpBtn').addEventListener('click', () => {
         const helpOverlay = document.getElementById('helpOverlay');
         helpOverlay.style.display = (helpOverlay.style.display === 'none' ? 'block' : 'none');
@@ -129,6 +126,17 @@ function initUI() {
     canvas.addEventListener('mouseup', () => { mouseDown = false; });
     canvas.addEventListener('mousemove', mouseMove);
     window.addEventListener('resize', resizeCanvas);
+
+    const menuToggleBtn = document.getElementById('menuToggleBtn');
+    const sidebar = document.querySelector('.sidebar');
+    menuToggleBtn.addEventListener('click', () => {
+        sidebarOpen = !sidebarOpen;
+        if (sidebarOpen) {
+            sidebar.classList.add('open');
+        } else {
+            sidebar.classList.remove('open');
+        }
+    });
 }
 
 function updateEquations() {
@@ -225,7 +233,6 @@ function updateParametersUI() {
         let rangeSpec = ranges[key];
         if (!rangeSpec) continue;
 
-        // Create UI elements
         let group = document.createElement('div');
         group.className = 'param-group';
 
@@ -301,7 +308,6 @@ function handleKey(e) {
     }
 }
 
-
 function mouseMove(e) {
     if (!mouseDown) return;
     let dx = e.clientX - lastMouseX;
@@ -313,8 +319,11 @@ function mouseMove(e) {
 }
 
 function resizeCanvas() {
-    canvas.width = window.innerWidth - 300;
-    canvas.height = window.innerHeight;
+    // Adjust canvas size based on sidebar presence on larger screens
+    const sidebar = document.querySelector('.sidebar');
+    let sidebarWidth = window.innerWidth > 768 ? sidebar.offsetWidth : 0;
+    canvas.width = window.innerWidth - sidebarWidth;
+    canvas.height = (window.innerWidth <= 768) ? (window.innerHeight - 50) : window.innerHeight;
 }
 
 function initParticles() {
@@ -459,7 +468,6 @@ function getColor(p) {
             return `hsl(${h},100%,50%)`;
     }
 }
-
 
 function saveImage() {
     let link = document.createElement('a');
