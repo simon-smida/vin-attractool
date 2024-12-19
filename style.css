@@ -304,6 +304,11 @@ button {
     transform: translateX(0);
   }
 
+  /* Hide the sidebar title on small screens to avoid duplication */
+  .sidebar .title-centered {
+    display: none;
+  }
+
   .main {
     position: relative;
     width: 100%;

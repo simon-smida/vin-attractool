@@ -16,6 +16,11 @@ let sidebarOpen = false;
 let scale = 10; 
 let pinchStartDist = null;
 
+// Track touches for rotation
+let lastTouchX = null;
+let lastTouchY = null;
+let isSingleFinger = false;
+
 const attractorParams = {
     lorenz: { sigma: 10, rho: 28, beta: 2.667 },
     rossler: { a: 0.2, b: 0.2, c: 5.7 },
@@ -65,16 +70,13 @@ const paramRanges = {
     }
 };
 
-// Define title color mappings based on colorScheme
-// We'll pick contrasting or related hues for ATTRAC and TOOL
-// Just a heuristic: For each scheme, pick two distinct but complementary hues
 const titleColors = {
     "rainbow":   { attrac: "hsl(300, 100%, 60%)", tool: "hsl(180, 100%, 50%)" },
-    "fire":      { attrac: "hsl(20, 100%, 60%)", tool: "hsl(40, 100%, 50%)" },
-    "cool":      { attrac: "hsl(200, 50%, 70%)", tool: "hsl(160, 50%, 60%)" },
+    "fire":      { attrac: "hsl(20, 100%, 60%)",  tool: "hsl(40, 100%, 50%)" },
+    "cool":      { attrac: "hsl(200, 50%, 70%)",  tool: "hsl(160, 50%, 60%)" },
     "neon":      { attrac: "hsl(300, 100%, 60%)", tool: "hsl(180, 100%, 50%)" },
-    "pastel":    { attrac: "hsl(300, 50%, 75%)", tool: "hsl(180, 50%, 75%)" },
-    "grayscale": { attrac: "hsl(0, 0%, 70%)", tool: "hsl(0, 0%, 50%)" },
+    "pastel":    { attrac: "hsl(300, 50%, 75%)",  tool: "hsl(180, 50%, 75%)" },
+    "grayscale": { attrac: "hsl(0, 0%, 70%)",     tool: "hsl(0, 0%, 50%)" },
     "cyberpunk": { attrac: "hsl(300, 100%, 60%)", tool: "hsl(180, 100%, 50%)" }
 };
 
@@ -142,8 +144,8 @@ function initUI() {
     document.getElementById('randomizeBtn').addEventListener('click', randomizeParameters);
 
     window.addEventListener('keydown', handleKey);
-    canvas.addEventListener('mousedown', e => { mouseDown = true; lastMouseX = e.clientX; lastMouseY = e.clientY; });
-    canvas.addEventListener('mouseup', () => { mouseDown = false; });
+    canvas.addEventListener('mousedown', handleMouseDown);
+    canvas.addEventListener('mouseup', handleMouseUp);
     canvas.addEventListener('mousemove', mouseMove);
     window.addEventListener('resize', resizeCanvas);
 
@@ -154,26 +156,9 @@ function initUI() {
         scale = Math.max(1, Math.min(100, scale));
     }, { passive: false });
 
-    canvas.addEventListener('touchstart', (e) => {
-        if (e.touches.length === 2) {
-            pinchStartDist = getTouchDistance(e);
-        }
-    }, { passive: true });
-
-    canvas.addEventListener('touchmove', (e) => {
-        if (e.touches.length === 2 && pinchStartDist !== null) {
-            e.preventDefault();
-            const currentDist = getTouchDistance(e);
-            const zoomFactor = currentDist / pinchStartDist;
-            scale *= zoomFactor;
-            scale = Math.max(1, Math.min(100, scale));
-            pinchStartDist = currentDist;
-        }
-    }, { passive: false });
-    
-    canvas.addEventListener('touchend', () => {
-        pinchStartDist = null;
-    });
+    canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+    canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+    canvas.addEventListener('touchend', handleTouchEnd, { passive: true });
 
     const menuToggleBtn = document.getElementById('menuToggleBtn');
     const sidebar = document.querySelector('.sidebar');
@@ -185,6 +170,60 @@ function initUI() {
             sidebar.classList.remove('open');
         }
     });
+}
+
+function handleMouseDown(e) {
+    mouseDown = true;
+    lastMouseX = e.clientX;
+    lastMouseY = e.clientY;
+}
+
+function handleMouseUp() {
+    mouseDown = false;
+}
+
+function handleTouchStart(e) {
+    if (e.touches.length === 1) {
+        // Single finger: rotate
+        isSingleFinger = true;
+        pinchStartDist = null;
+        lastTouchX = e.touches[0].clientX;
+        lastTouchY = e.touches[0].clientY;
+    } else if (e.touches.length === 2) {
+        // Two fingers: pinch zoom
+        isSingleFinger = false;
+        pinchStartDist = getTouchDistance(e);
+    }
+}
+
+function handleTouchMove(e) {
+    if (e.touches.length === 2) {
+        // Pinch zoom
+        e.preventDefault();
+        const currentDist = getTouchDistance(e);
+        const zoomFactor = currentDist / pinchStartDist;
+        scale *= zoomFactor;
+        scale = Math.max(1, Math.min(100, scale));
+        pinchStartDist = currentDist;
+    } else if (e.touches.length === 1 && isSingleFinger) {
+        // Single finger rotation
+        e.preventDefault();
+        const touchX = e.touches[0].clientX;
+        const touchY = e.touches[0].clientY;
+        let dx = touchX - lastTouchX;
+        let dy = touchY - lastTouchY;
+        rotationX += dy * 0.01;
+        rotationY += dx * 0.01;
+        lastTouchX = touchX;
+        lastTouchY = touchY;
+    }
+}
+
+function handleTouchEnd(e) {
+    if (e.touches.length < 1) {
+        isSingleFinger = false;
+        pinchStartDist = null;
+    }
 }
 
 function randomizeParameters() {
