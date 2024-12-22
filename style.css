@@ -185,6 +185,26 @@ button {
   text-transform: uppercase;
 }
 
+.button-group {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.button-group button {
+  width: 100px;
+  height: 40px;
+  padding: 0;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+
+
+
 .icon-button {
   background: #444;
   color: #fff;

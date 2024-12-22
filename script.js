@@ -12,6 +12,7 @@ let colorScheme = "rainbow";
 let bgColor = "#000000";
 let attractorType = "lorenz";
 let sidebarOpen = false;
+let showTrails = false; 
 
 let scale = 10; 
 let pinchStartDist = null;
@@ -107,6 +108,11 @@ window.onload = () => {
 };
 
 function initUI() {
+    document.getElementById('trailToggleBtn').addEventListener('click', () => {
+        showTrails = !showTrails;
+        const trailBtn = document.getElementById('trailToggleBtn');
+        trailBtn.textContent = `Trails: ${showTrails ? '💫' : '❌'}`;
+    });    
     document.getElementById('particleCount').addEventListener('input', e => {
         particleCount = parseInt(e.target.value);
         document.getElementById('particleCountVal').textContent = particleCount;
@@ -457,10 +463,12 @@ function initParticles() {
             y: Math.random() * (ranges.y.max - ranges.y.min) + ranges.y.min,
             z: Math.random() * (ranges.z.max - ranges.z.min) + ranges.z.min,
             hue: hue,
-            hueInc: hueInc
+            hueInc: hueInc,
+            history: [] 
         });
     }
 }
+
 
 
 function resetParticles() {
@@ -526,28 +534,45 @@ function animate() {
                 case 'rossler': stepRossler(p); break;
                 case 'halvorsen': stepHalvorsen(p); break;
                 case 'aizawa': stepAizawa(p); break;
-                // Removed 'chen' and 'dadras'
+            }
+
+            if (showTrails) {
+                // Update history only if trails are enabled
+                p.history.push({ x: p.x, y: p.y, z: p.z });
+                if (p.history.length > 50) p.history.shift();
             }
         }
     }
 
     for (let p of particles) {
-        let X = p.x, Y = p.y, Z = p.z;
-
-        let cosX = Math.cos(rotationX), sinX = Math.sin(rotationX);
-        let cosY = Math.cos(rotationY), sinY = Math.sin(rotationY);
-
-        let xz = X * cosY - Z * sinY;
-        let zz = Z * cosY + X * sinY;
-        let yz = Y * cosX - zz * sinX;
-
-        let px = xz * scaleFactor + centerX;
-        let py = yz * scaleFactor + centerY;
-
-        ctx.fillStyle = getColor(p);
-        ctx.fillRect(px, py, 2, 2);
+        if (showTrails) {
+            ctx.beginPath();
+            for (let i = 0; i < p.history.length; i++) {
+                let point = p.history[i];
+                let { px, py } = projectToScreen(point.x, point.y, point.z, centerX, centerY, scaleFactor);
+                if (i === 0) ctx.moveTo(px, py);
+                else ctx.lineTo(px, py);
+            }
+            ctx.strokeStyle = getColor(p);
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        } else {
+            let { px, py } = projectToScreen(p.x, p.y, p.z, centerX, centerY, scaleFactor);
+            ctx.fillStyle = getColor(p);
+            ctx.fillRect(px, py, 2, 2);
+        }
     }
 }
+
+function projectToScreen(x, y, z, centerX, centerY, scaleFactor) {
+    let cosX = Math.cos(rotationX), sinX = Math.sin(rotationX);
+    let cosY = Math.cos(rotationY), sinY = Math.sin(rotationY);
+    let xz = x * cosY - z * sinY;
+    let zz = z * cosY + x * sinY;
+    let yz = y * cosX - zz * sinX;
+    return { px: xz * scaleFactor + centerX, py: yz * scaleFactor + centerY };
+}
+
 
 function getColor(p) {
     p.hue += p.hueInc * speed;
