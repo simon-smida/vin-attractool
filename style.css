@@ -76,13 +76,13 @@ body {
 }
 
 .section {
-  margin-bottom: 8px;
+  margin-bottom: 15px;
 }
 
 .section h2 {
   font-size: 16px;
   color: #fff;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
   border-bottom: 1px solid #444;
   padding-bottom: 5px;
   letter-spacing: 0.5px;
@@ -185,25 +185,25 @@ button {
   text-transform: uppercase;
 }
 
-.button-group {
+.button-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.button-container .simple-button {
+  width: 100px;
+}
+
+.side-by-side {
   display: flex;
   gap: 10px;
-  justify-content: center;
+  justify-content: space-between;
 }
 
-.button-group button {
-  width: 100px;
-  height: 40px;
-  padding: 0;
-  text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.side-by-side .param-group {
+  flex: 1;
 }
-
-
-
-
 
 .icon-button {
   background: #444;
@@ -301,7 +301,8 @@ button {
 
 .attribution {
   text-align: center;
-  margin-top: -9px;
+  margin-top: -10px;
+  margin-bottom: 20px;
   font-size: 12px;
   color: #aaa;
 }
@@ -348,7 +349,6 @@ button {
     width: 100%;
   }
 }
-
 
 @media (max-width: 768px) {
   .container {

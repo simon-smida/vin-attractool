@@ -6,15 +6,15 @@ let lastMouseX = null;
 let lastMouseY = null;
 let mouseDown = false;
 let speed = 1;
-let particleCount = 1000;
+let particleCount = 500;
 let particles = [];
 let colorScheme = "rainbow";
 let bgColor = "#000000";
 let attractorType = "lorenz";
 let sidebarOpen = false;
-let showTrails = false; 
+let showTrails = false;
 
-let scale = 10; 
+let scale = 10;
 let pinchStartDist = null;
 
 let lastTouchX = null;
@@ -54,8 +54,8 @@ const paramRanges = {
         b: { min: 0, max: 2, step: 0.01 },
         c: { min: 0, max: 2, step: 0.01 },
         d: { min: 0, max: 5, step: 0.1 },
-        e: { min: 0, max: 1, step: 0.01 }, 
-        f: { min: 0, max: 1, step: 0.01 } 
+        e: { min: 0, max: 1, step: 0.01 },
+        f: { min: 0, max: 1, step: 0.01 }
     }
 };
 
@@ -84,12 +84,12 @@ const initialRanges = {
 
 
 const titleColors = {
-    "rainbow":   { attrac: "hsl(300, 100%, 60%)", tool: "hsl(180, 100%, 50%)" },
-    "fire":      { attrac: "hsl(20, 100%, 60%)",  tool: "hsl(40, 100%, 50%)" },
-    "cool":      { attrac: "hsl(200, 50%, 70%)",  tool: "hsl(160, 50%, 60%)" },
-    "neon":      { attrac: "hsl(300, 100%, 60%)", tool: "hsl(180, 100%, 50%)" },
-    "pastel":    { attrac: "hsl(300, 50%, 75%)",  tool: "hsl(180, 50%, 75%)" },
-    "grayscale": { attrac: "hsl(0, 0%, 70%)",     tool: "hsl(0, 0%, 50%)" },
+    "rainbow": { attrac: "hsl(300, 100%, 60%)", tool: "hsl(180, 100%, 50%)" },
+    "fire": { attrac: "hsl(20, 100%, 60%)", tool: "hsl(40, 100%, 50%)" },
+    "cool": { attrac: "hsl(200, 50%, 70%)", tool: "hsl(160, 50%, 60%)" },
+    "neon": { attrac: "hsl(300, 100%, 60%)", tool: "hsl(180, 100%, 50%)" },
+    "pastel": { attrac: "hsl(300, 50%, 75%)", tool: "hsl(180, 50%, 75%)" },
+    "grayscale": { attrac: "hsl(0, 0%, 70%)", tool: "hsl(0, 0%, 50%)" },
     "cyberpunk": { attrac: "hsl(300, 100%, 60%)", tool: "hsl(180, 100%, 50%)" }
 };
 
@@ -112,7 +112,7 @@ function initUI() {
         showTrails = !showTrails;
         const trailBtn = document.getElementById('trailToggleBtn');
         trailBtn.textContent = `Trails: ${showTrails ? '💫' : '❌'}`;
-    });    
+    });
     document.getElementById('particleCount').addEventListener('input', e => {
         particleCount = parseInt(e.target.value);
         document.getElementById('particleCountVal').textContent = particleCount;
@@ -136,12 +136,12 @@ function initUI() {
     });
 
     document.getElementById('resetBtn').addEventListener('click', () => {
-        setPredefinedParameters(); 
+        setPredefinedParameters();
         updateParametersUI();
         resetParticles();
         updateEquations();
     });
-    
+
     document.getElementById('pauseBtn').addEventListener('click', () => {
         paused = !paused;
         const pauseBtn = document.getElementById('pauseBtn');
@@ -306,7 +306,7 @@ function updateEquations() {
         \\]
         \\[
         \\frac{dz}{dt} = -a z - 4 x - 4 y - x^2
-        \\]`; 
+        \\]`;
     } else if (attractorType === 'aizawa') {
         eqText = `
         \\[
@@ -319,7 +319,7 @@ function updateEquations() {
         \\frac{dz}{dt} = c + a z - \\frac{z^3}{3} - (x^2 + y^2)(1 + e z) + f z x^3
         \\]`;
     }
-        
+
 
     eqDiv.innerHTML = eqText;
     if (window.MathJax && window.MathJax.typeset) {
@@ -448,7 +448,7 @@ function resizeCanvas() {
 function initParticles() {
     particles = [];
     const ranges = initialRanges[attractorType];
-    
+
     if (!ranges) {
         console.error(`No initial ranges defined for attractor type: ${attractorType}`);
         return;
@@ -464,7 +464,7 @@ function initParticles() {
             z: Math.random() * (ranges.z.max - ranges.z.min) + ranges.z.min,
             hue: hue,
             hueInc: hueInc,
-            history: [] 
+            history: []
         });
     }
 }

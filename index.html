@@ -31,22 +31,31 @@
             </div>
             <div class="section">
                 <h2>Attractor</h2>
-                <div class="param-group">
-                    <select id="attractorType">
-                        <option value="lorenz">Lorenz</option>
-                        <option value="rossler">Rössler</option>
-                        <option value="halvorsen">Halvorsen</option>
-                        <option value="aizawa">Aizawa</option>
-                    </select>
+                <div class="side-by-side">
+                    <div class="param-group">
+                        <label>Type</label>
+                        <select id="attractorType">
+                            <option value="lorenz">Lorenz</option>
+                            <option value="rossler">Rössler</option>
+                            <option value="halvorsen">Halvorsen</option>
+                            <option value="aizawa">Aizawa</option>
+                        </select>
+                    </div>
+                    <div class="param-group">
+                        <label>Color Scheme</label>
+                        <select id="colorScheme">
+                            <option value="rainbow">🌈 Rainbow</option>
+                            <option value="fire">🔥 Fire</option>
+                            <option value="cool">❄️ Cool</option>
+                            <option value="neon">⚡ Neon</option>
+                            <option value="pastel">🧁 Pastel</option>
+                            <option value="grayscale">⚫ Grayscale</option>
+                            <option value="cyberpunk">💜 Cyberpunk</option>
+                        </select>
+                    </div>
                 </div>
-            </div>
-            <div class="section">
-                <h2>Parameters</h2>
-                <div id="paramContainer"></div>
-                <div class="button-group">
-                    <button id="randomizeBtn" class="simple-button" title="Randomize Parameters">Lucky 🍀</button>
-                    <button id="trailToggleBtn" class="simple-button" title="Toggle Particle Trails">Trails:
-                        ❌</button>
+                <div class="button-container">
+                    <button id="trailToggleBtn" class="simple-button" title="Toggle Particle Trails">Trails: ❌</button>
                 </div>
             </div>
             <div class="section">
@@ -54,28 +63,23 @@
                 <div class="param-group">
                     <div class="label-row">
                         <label>Particles</label>
-                        <span id="particleCountVal">1000</span>
+                        <span id="particleCountVal">500</span>
                     </div>
-                    <input type="range" id="particleCount" min="100" max="5000" step="100" value="1000" />
+                    <input type="range" id="particleCount" min="0" max="1000" step="1" value="500" />
                 </div>
                 <div class="param-group">
                     <div class="label-row">
                         <label>Speed</label>
                         <span id="speedVal">1x</span>
                     </div>
-                    <input type="range" id="speed" min="0.5" max="5" step="0.1" value="1" />
+                    <input type="range" id="speed" min="0" max="3" step="0.1" value="1" />
                 </div>
-                <div class="param-group">
-                    <label><strong>Color Scheme</strong> 🎨</label>
-                    <select id="colorScheme">
-                        <option value="rainbow">🌈 Rainbow</option>
-                        <option value="fire">🔥 Fire</option>
-                        <option value="cool">❄️ Cool</option>
-                        <option value="neon">⚡ Neon</option>
-                        <option value="pastel">🧁 Pastel</option>
-                        <option value="grayscale">⚫ Grayscale</option>
-                        <option value="cyberpunk">💜 Cyberpunk</option>
-                    </select>
+            </div>
+            <div class="section">
+                <h2>Parameters</h2>
+                <div id="paramContainer"></div>
+                <div class="button-container">
+                    <button id="randomizeBtn" class="simple-button" title="Randomize Parameters">Lucky 🍀</button>
                 </div>
             </div>
         </div>
