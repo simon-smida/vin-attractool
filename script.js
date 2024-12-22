@@ -24,14 +24,14 @@ const attractorParams = {
     lorenz: { sigma: 10, rho: 28, beta: 2.667 },
     rossler: { a: 0.2, b: 0.2, c: 5.7 },
     halvorsen: { a: 1.4 },
-    aizawa: { a: 0.95, b: 0.7, c: 0.6, d: 3.5 }
+    aizawa: { a: 0.95, b: 0.7, c: 0.6, d: 3.5, e: 0.25, f: 0.1 }
 };
 
 const prettyParameters = {
     lorenz: { sigma: 10, rho: 28, beta: 2.667 },
     rossler: { a: 0.2, b: 0.2, c: 5.7 },
     halvorsen: { a: 1.4 },
-    aizawa: { a: 0.95, b: 0.7, c: 0.6, d: 3.5 }
+    aizawa: { a: 0.95, b: 0.7, c: 0.6, d: 3.5, e: 0.25, f: 0.1 }
 };
 
 const paramRanges = {
@@ -52,9 +52,35 @@ const paramRanges = {
         a: { min: 0, max: 2, step: 0.01 },
         b: { min: 0, max: 2, step: 0.01 },
         c: { min: 0, max: 2, step: 0.01 },
-        d: { min: 0, max: 5, step: 0.1 }
+        d: { min: 0, max: 5, step: 0.1 },
+        e: { min: 0, max: 1, step: 0.01 }, 
+        f: { min: 0, max: 1, step: 0.01 } 
     }
 };
+
+const initialRanges = {
+    lorenz: {
+        x: { min: -10, max: 10 },
+        y: { min: -10, max: 10 },
+        z: { min: 0, max: 30 }
+    },
+    rossler: {
+        x: { min: -10, max: 10 },
+        y: { min: -10, max: 10 },
+        z: { min: 0, max: 10 }
+    },
+    halvorsen: {
+        x: { min: -5, max: 5 },
+        y: { min: -5, max: 5 },
+        z: { min: -5, max: 5 }
+    },
+    aizawa: {
+        x: { min: -2, max: 2 },
+        y: { min: -2, max: 2 },
+        z: { min: -2, max: 2 }
+    }
+};
+
 
 const titleColors = {
     "rainbow":   { attrac: "hsl(300, 100%, 60%)", tool: "hsl(180, 100%, 50%)" },
@@ -103,7 +129,13 @@ function initUI() {
         updateEquations();
     });
 
-    document.getElementById('resetBtn').addEventListener('click', resetParticles);
+    document.getElementById('resetBtn').addEventListener('click', () => {
+        setPredefinedParameters(); 
+        updateParametersUI();
+        resetParticles();
+        updateEquations();
+    });
+    
     document.getElementById('pauseBtn').addEventListener('click', () => {
         paused = !paused;
         const pauseBtn = document.getElementById('pauseBtn');
@@ -261,26 +293,27 @@ function updateEquations() {
     } else if (attractorType === 'halvorsen') {
         eqText = `
         \\[
-        \\frac{dx}{dt} = -a x - y - z(y + x)
+        \\frac{dx}{dt} = -a x - 4 y - 4 z - y^2
         \\]
         \\[
-        \\frac{dy}{dt} = -a y - z - x(z + y)
+        \\frac{dy}{dt} = -a y - 4 z - 4 x - z^2
         \\]
         \\[
-        \\frac{dz}{dt} = -a z - x - y(x + z)
-        \\]`;
+        \\frac{dz}{dt} = -a z - 4 x - 4 y - x^2
+        \\]`; 
     } else if (attractorType === 'aizawa') {
         eqText = `
         \\[
         \\frac{dx}{dt} = (z - b)x - d y
         \\]
         \\[
-        \\frac{dy}{dt} = d x + (z - b) y
+        \\frac{dy}{dt} = d x + (z - b)y
         \\]
         \\[
-        \\frac{dz}{dt} = c + z(a - z^{2}) + \\frac{x^{2} + y^{2}}{2}
+        \\frac{dz}{dt} = c + a z - \\frac{z^3}{3} - (x^2 + y^2)(1 + e z) + f z x^3
         \\]`;
     }
+        
 
     eqDiv.innerHTML = eqText;
     if (window.MathJax && window.MathJax.typeset) {
@@ -298,6 +331,16 @@ function updateParametersUI() {
     container.innerHTML = "";
     const params = attractorParams[attractorType];
     const ranges = paramRanges[attractorType];
+
+    // Check if the current attractor is Aizawa
+    const isAizawa = attractorType === 'aizawa';
+
+    // Apply 'two-columns' class if Aizawa is selected, else remove it
+    if (isAizawa) {
+        container.classList.add('two-columns');
+    } else {
+        container.classList.remove('two-columns');
+    }
 
     for (let key in params) {
         let val = params[key];
@@ -398,18 +441,27 @@ function resizeCanvas() {
 
 function initParticles() {
     particles = [];
+    const ranges = initialRanges[attractorType];
+    
+    if (!ranges) {
+        console.error(`No initial ranges defined for attractor type: ${attractorType}`);
+        return;
+    }
+
     for (let i = 0; i < particleCount; i++) {
         let hue = Math.random() * 360;
         let hueInc = 0.5 + Math.random();
+
         particles.push({
-            x: Math.random() * 10 - 5,
-            y: Math.random() * 10 - 5,
-            z: Math.random() * 10 - 5,
+            x: Math.random() * (ranges.x.max - ranges.x.min) + ranges.x.min,
+            y: Math.random() * (ranges.y.max - ranges.y.min) + ranges.y.min,
+            z: Math.random() * (ranges.z.max - ranges.z.min) + ranges.z.min,
             hue: hue,
             hueInc: hueInc
         });
     }
 }
+
 
 function resetParticles() {
     initParticles();
@@ -436,23 +488,25 @@ function stepRossler(p) {
 }
 
 function stepHalvorsen(p) {
-    let { a } = attractorParams.halvorsen;
-    let dx = -a * p.x - p.y - p.z * (p.y + p.x);
-    let dy = -a * p.y - p.z - p.x * (p.z + p.y);
-    let dz = -a * p.z - p.x - p.y * (p.x + p.z);
+    const a = attractorParams.halvorsen.a;
+    const dx = -a * p.x - 4 * p.y - 4 * p.z - p.y * p.y;
+    const dy = -a * p.y - 4 * p.z - 4 * p.x - p.z * p.z;
+    const dz = -a * p.z - 4 * p.x - 4 * p.y - p.x * p.x;
     p.x += dx * 0.005 * speed;
     p.y += dy * 0.005 * speed;
     p.z += dz * 0.005 * speed;
 }
 
+
 function stepAizawa(p) {
-    let { a, b, c, d } = attractorParams.aizawa;
+    let { a, b, c, d, e, f } = attractorParams.aizawa;
+    let dt = 0.005;
     let dx = (p.z - b) * p.x - d * p.y;
     let dy = d * p.x + (p.z - b) * p.y;
-    let dz = c + p.z * (a - p.z * p.z) + (p.x * p.x + p.y * p.y) / 2;
-    p.x += dx * 0.01 * speed;
-    p.y += dy * 0.01 * speed;
-    p.z += dz * 0.01 * speed;
+    let dz = c + a * p.z - p.z ** 3 / 3 - (p.x ** 2 + p.y ** 2) * (1 + e * p.z) + f * p.z * p.x ** 3;
+    p.x += dx * dt * speed;
+    p.y += dy * dt * speed;
+    p.z += dz * dt * speed;
 }
 
 function animate() {

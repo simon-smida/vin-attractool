@@ -303,6 +303,32 @@ button {
   font-size: 14px;
 }
 
+#paramContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+#paramContainer.two-columns {
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+#paramContainer.two-columns .param-group {
+  width: 45%;
+}
+
+#paramContainer .param-group {
+  width: 100%;
+}
+
+@media (max-width: 600px) {
+  #paramContainer.two-columns .param-group {
+    width: 100%;
+  }
+}
+
 
 @media (max-width: 768px) {
   .container {
