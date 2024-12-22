@@ -24,18 +24,14 @@ const attractorParams = {
     lorenz: { sigma: 10, rho: 28, beta: 2.667 },
     rossler: { a: 0.2, b: 0.2, c: 5.7 },
     halvorsen: { a: 1.4 },
-    chen: { a: 35, b: 3, c: 28 },
-    aizawa: { a: 0.95, b: 0.7, c: 0.6, d: 3.5 },
-    dadras: { p: 3, q: 2.7 }
+    aizawa: { a: 0.95, b: 0.7, c: 0.6, d: 3.5 }
 };
 
 const prettyParameters = {
     lorenz: { sigma: 10, rho: 28, beta: 2.667 },
     rossler: { a: 0.2, b: 0.2, c: 5.7 },
     halvorsen: { a: 1.4 },
-    chen: { a: 35, b: 3, c: 28 },
-    aizawa: { a: 0.95, b: 0.7, c: 0.6, d: 3.5 },
-    dadras: { p: 3, q: 2.7 }
+    aizawa: { a: 0.95, b: 0.7, c: 0.6, d: 3.5 }
 };
 
 const paramRanges = {
@@ -52,20 +48,11 @@ const paramRanges = {
     halvorsen: {
         a: { min: 0, max: 5, step: 0.1 }
     },
-    chen: {
-        a: { min: 0, max: 50, step: 0.5 },
-        b: { min: 0, max: 10, step: 0.1 },
-        c: { min: 0, max: 50, step: 0.5 }
-    },
     aizawa: {
         a: { min: 0, max: 2, step: 0.01 },
         b: { min: 0, max: 2, step: 0.01 },
         c: { min: 0, max: 2, step: 0.01 },
         d: { min: 0, max: 5, step: 0.1 }
-    },
-    dadras: {
-        p: { min: 0, max: 10, step: 0.1 },
-        q: { min: 0, max: 10, step: 0.1 }
     }
 };
 
@@ -282,17 +269,6 @@ function updateEquations() {
         \\[
         \\frac{dz}{dt} = -a z - x - y(x + z)
         \\]`;
-    } else if (attractorType === 'chen') {
-        eqText = `
-        \\[
-        \\frac{dx}{dt} = a(y - x)
-        \\]
-        \\[
-        \\frac{dy}{dt} = (c - a)x - xz + c y
-        \\]
-        \\[
-        \\frac{dz}{dt} = xy - b z
-        \\]`;
     } else if (attractorType === 'aizawa') {
         eqText = `
         \\[
@@ -303,17 +279,6 @@ function updateEquations() {
         \\]
         \\[
         \\frac{dz}{dt} = c + z(a - z^{2}) + \\frac{x^{2} + y^{2}}{2}
-        \\]`;
-    } else if (attractorType === 'dadras') {
-        eqText = `
-        \\[
-        \\frac{dx}{dt} = y - x
-        \\]
-        \\[
-        \\frac{dy}{dt} = x z + p y
-        \\]
-        \\[
-        \\frac{dz}{dt} = q z + x y
         \\]`;
     }
 
@@ -480,31 +445,11 @@ function stepHalvorsen(p) {
     p.z += dz * 0.005 * speed;
 }
 
-function stepChen(p) {
-    let { a, b, c } = attractorParams.chen;
-    let dx = a * (p.y - p.x);
-    let dy = (c - a)*p.x - p.x*p.z + c*p.y;
-    let dz = p.x*p.y - b*p.z;
-    p.x += dx * 0.01 * speed;
-    p.y += dy * 0.01 * speed;
-    p.z += dz * 0.01 * speed;
-}
-
 function stepAizawa(p) {
     let { a, b, c, d } = attractorParams.aizawa;
-    let dx = (p.z - b)*p.x - d*p.y;
-    let dy = d*p.x + (p.z - b)*p.y;
-    let dz = c + p.z*(a - p.z*p.z) + (p.x*p.x + p.y*p.y)/2;
-    p.x += dx * 0.01 * speed;
-    p.y += dy * 0.01 * speed;
-    p.z += dz * 0.01 * speed;
-}
-
-function stepDadras(p) {
-    let { p: pp, q } = attractorParams.dadras;
-    let dx = p.y - p.x;
-    let dy = p.x*p.z + pp*p.y;
-    let dz = q*p.z + p.x*p.y;
+    let dx = (p.z - b) * p.x - d * p.y;
+    let dy = d * p.x + (p.z - b) * p.y;
+    let dz = c + p.z * (a - p.z * p.z) + (p.x * p.x + p.y * p.y) / 2;
     p.x += dx * 0.01 * speed;
     p.y += dy * 0.01 * speed;
     p.z += dz * 0.01 * speed;
@@ -526,9 +471,8 @@ function animate() {
                 case 'lorenz': stepLorenz(p); break;
                 case 'rossler': stepRossler(p); break;
                 case 'halvorsen': stepHalvorsen(p); break;
-                case 'chen': stepChen(p); break;
                 case 'aizawa': stepAizawa(p); break;
-                case 'dadras': stepDadras(p); break;
+                // Removed 'chen' and 'dadras'
             }
         }
     }
