@@ -11,9 +11,7 @@
   - Lorenz
   - Rössler
   - Halvorsen
-  - Chen
   - Aizawa
-  - Dadras
 - **Color Schemes**: 
   - 🌈 Rainbow
   - 🔥 Fire
